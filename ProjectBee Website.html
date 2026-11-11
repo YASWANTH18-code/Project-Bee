@@ -1,0 +1,1972 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ProjectBee</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout concept: notebook graph-paper hero with a project finder (board + class), then a filterable catalogue; login, cart and checkout slide over as layers so guests never leave the page. */
+:root{
+  --paper:#F2F6FC; --surface:#FFFFFF; --ink:#0F1B3F; --muted:#55608A; --line:#D3DBEE; --grid:#DDE6F6;
+  --honey:#FFB800; --on-honey:#0F1B3F; --honey-soft:#FFF0BF; --leaf:#16794F; --leaf-soft:#DDF3E8;
+  --danger:#B3261E; --focus:#2F5BFF; --heart:#E5484D; --foot-bg:#0F1B3F; --foot-fg:#E8EDFF; --foot-muted:#A9B5DE;
+  --bad-soft:#FBE3E1; --bad-ink:#8C1D18; --bad:#B3261E; --warn-ink:#7A5200; --info-soft:#E3EAFF; --info-ink:#1F3FB8;
+  --font-display:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0B1230; --surface:#141D45; --ink:#EEF2FF; --muted:#A5B1D8; --line:#27346A; --grid:#162050;
+  --honey:#FFC21A; --honey-soft:#3A3412; --leaf:#4FD39A; --leaf-soft:#12382C;
+  --danger:#FF8F86; --focus:#8FA8FF; --heart:#FF6B70; --foot-bg:#070C20; --foot-fg:#E8EDFF; --foot-muted:#97A3CE; --bad-soft:#4A1C1A; --bad-ink:#FFB4AD; --bad:#FF8F86; --warn-ink:#FFD266; --info-soft:#1B2A66; --info-ink:#B5C5FF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0B1230; --surface:#141D45; --ink:#EEF2FF; --muted:#A5B1D8; --line:#27346A; --grid:#162050;
+  --honey:#FFC21A; --honey-soft:#3A3412; --leaf:#4FD39A; --leaf-soft:#12382C;
+  --danger:#FF8F86; --focus:#8FA8FF; --heart:#FF6B70; --foot-bg:#070C20; --foot-fg:#E8EDFF; --foot-muted:#97A3CE; --bad-soft:#4A1C1A; --bad-ink:#FFB4AD; --bad:#FF8F86; --warn-ink:#FFD266; --info-soft:#1B2A66; --info-ink:#B5C5FF; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html.lock{overflow:hidden}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.55 var(--font-body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;line-height:1.12;text-wrap:balance;letter-spacing:-.015em}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* buttons and fields */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.15rem;border-radius:12px;border:1.5px solid transparent;font-weight:600;font-size:.97rem;cursor:pointer;text-decoration:none;transition:filter .15s,background .15s}
+.btn-primary{background:var(--honey);color:var(--on-honey)}
+.btn-primary:hover{filter:brightness(.95)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{background:var(--paper)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn-block{width:100%}
+.btn-link{background:none;border:0;padding:4px 0;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.icon-btn{position:relative;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;border:0;background:transparent;cursor:pointer}
+.icon-btn:hover{background:var(--paper)}
+.icon-btn svg{width:22px;height:22px}
+.count{position:absolute;top:2px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--honey);color:var(--on-honey);font-size:.72rem;font-weight:700;display:grid;place-items:center}
+.field{display:grid;gap:6px}
+.field label,.lbl{font-weight:600;font-size:.9rem}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:10px;min-height:44px;padding:0 12px;width:100%}
+textarea{padding:10px 12px;min-height:92px;resize:vertical}
+input[aria-invalid="true"],select[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--danger)}
+.err{color:var(--danger);font-size:.85rem;min-height:1.25em}
+.hint{color:var(--muted);font-size:.88rem}
+input[type=range]{padding:0;accent-color:var(--honey);min-height:32px;background:transparent;border:0}
+
+/* header */
+.site-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.head-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand actions" "search search";gap:6px 12px;align-items:center;padding-block:10px}
+.brand{grid-area:brand;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;justify-self:start}
+.brand svg{width:34px;height:34px}
+.brand span{font:800 1.3rem var(--font-display);letter-spacing:-.02em}
+.search{grid-area:search;position:relative;min-width:0}
+.search svg{position:absolute;left:12px;top:50%;translate:0 -50%;width:20px;height:20px;color:var(--muted);pointer-events:none}
+.search input{padding-left:42px;border-radius:12px}
+.head-actions{grid-area:actions;display:flex;align-items:center;gap:2px}
+.acct-wrap{position:relative}
+.acct-btn{min-height:44px;padding:0 12px;gap:8px}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--honey);color:var(--on-honey);display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.menu{position:absolute;right:0;top:calc(100% + 8px);width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;z-index:35;box-shadow:0 12px 30px rgba(8,13,36,.18)}
+.menu p{padding:8px 10px;font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:10px;cursor:pointer;font-weight:600}
+.menu button:hover{background:var(--paper)}
+@media(min-width:780px){
+  .head-row{grid-template-columns:auto minmax(260px,560px) auto;grid-template-areas:"brand search actions";justify-content:space-between}
+}
+
+/* hero */
+.hero{position:relative;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;border-bottom:1px solid var(--line)}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:56px;background:linear-gradient(transparent,var(--paper));pointer-events:none}
+.hero-grid{position:relative;z-index:1;display:grid;gap:32px;padding-block:clamp(28px,6vw,64px) clamp(44px,7vw,80px)}
+.hero h1{font-weight:800;font-size:clamp(2.2rem,5.6vw,3.7rem);max-width:15ch}
+.hero .lead{margin-top:14px;font-size:1.1rem;color:var(--muted);max-width:46ch}
+.finder{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end;max-width:640px;box-shadow:0 10px 30px rgba(15,27,63,.08)}
+.finder .ff{display:grid;gap:6px;min-width:0}
+.finder .ff:first-child{grid-column:1/-1}
+.seg{display:flex;gap:4px;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:3px}
+.seg button{flex:1;min-height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;font-size:.92rem;cursor:pointer;color:var(--muted)}
+.seg button[aria-checked="true"]{background:var(--ink);color:var(--surface)}
+.trust{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:8px;color:var(--muted);font-size:.95rem}
+.trust li{display:flex;gap:10px;align-items:center}
+.trust svg{width:18px;height:18px;flex:none;color:var(--leaf)}
+.hero-art{position:relative;min-height:300px;max-width:520px;width:100%;margin-inline:auto}
+.board{position:absolute;inset:0 8% 14% 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;rotate:-2deg;box-shadow:0 18px 40px rgba(15,27,63,.14)}
+.board::before{content:"";position:absolute;top:-10px;left:50%;translate:-50% 0;width:90px;height:22px;background:rgba(255,184,0,.7);rotate:2deg;border-radius:3px}
+.board svg,.card-art svg,.pd-art svg,.thumb svg{display:block;width:100%;height:100%;border-radius:8px}
+.board svg{height:100%}
+.mini{position:absolute;right:0;bottom:0;width:42%;aspect-ratio:4/3;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px;rotate:3deg;box-shadow:0 12px 28px rgba(15,27,63,.16)}
+.note{position:absolute;left:4%;bottom:2%;background:#FFE680;color:#0F1B3F;padding:10px 14px;border-radius:4px;font-weight:700;font-size:.9rem;line-height:1.35;rotate:-4deg;box-shadow:0 8px 18px rgba(15,27,63,.18)}
+.tag{position:absolute;right:2%;top:4%;background:var(--ink);color:var(--surface);padding:7px 12px;border-radius:999px;font-weight:700;font-size:.85rem;rotate:3deg}
+@media(min-width:900px){.hero-grid{grid-template-columns:1.1fr .9fr;align-items:center}.hero-art{min-height:380px}}
+
+/* catalogue */
+.shop{padding-block:40px 24px;scroll-margin-top:120px}
+.shop-head{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end;justify-content:space-between}
+.shop-head h2{font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:800}
+.cats{display:flex;gap:8px;overflow-x:auto;padding-block:16px 4px;scrollbar-width:thin}
+.chip{flex:none;min-height:38px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:.9rem;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding-block:14px}
+.toolbar .right{display:flex;gap:10px;align-items:center}
+.toolbar select{width:auto;min-width:170px}
+.filter-toggle{display:inline-flex}
+.shop-grid{display:grid;gap:24px}
+.filters{display:none;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;align-self:start;gap:18px}
+.filters.open{display:grid}
+.filters h3{font-size:1rem;margin-bottom:8px}
+.subj{display:flex;flex-wrap:wrap;gap:6px}
+.subj .chip{min-height:34px;padding:0 12px;font-size:.85rem}
+.price-out{display:flex;justify-content:space-between;font-weight:600;font-size:.9rem}
+@media(min-width:900px){
+  .shop-grid{grid-template-columns:260px 1fr}
+  .filters{display:grid;position:sticky;top:calc(96px + env(safe-area-inset-top,0px))}
+  .filter-toggle{display:none}
+}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:translate .15s,box-shadow .15s}
+.card:hover{translate:0 -2px;box-shadow:0 12px 26px rgba(15,27,63,.12)}
+.card-art{position:relative;aspect-ratio:4/3;padding:8px;cursor:pointer}
+.heart{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink);box-shadow:0 2px 8px rgba(15,27,63,.2)}
+.heart svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.heart[aria-pressed="true"]{color:var(--heart)}
+.heart[aria-pressed="true"] svg{fill:var(--heart)}
+.vid{position:absolute;left:14px;bottom:14px;background:var(--ink);color:var(--surface);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px}
+.card-body{padding:4px 16px 16px;display:grid;gap:6px;flex:1;align-content:start}
+.card-title{background:none;border:0;padding:0;text-align:left;cursor:pointer;font:700 1.08rem/1.25 var(--font-display);letter-spacing:-.01em}
+.card-title:hover{text-decoration:underline;text-underline-offset:3px}
+.meta{color:var(--muted);font-size:.88rem}
+.stars{color:#E39B00;letter-spacing:1px;font-size:.95rem;white-space:nowrap}
+.rate{display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--muted)}
+.price-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
+.price-row strong{font:800 1.3rem var(--font-display)}
+.price-row s{color:var(--muted);font-size:.92rem}
+.off{background:var(--leaf-soft);color:var(--leaf);font-weight:700;font-size:.78rem;padding:2px 8px;border-radius:999px}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;border:1.5px dashed var(--line);border-radius:16px;display:grid;gap:12px;justify-items:center}
+.empty h3{font-size:1.2rem}
+
+/* how it works */
+.how{padding-block:32px 56px}
+.how h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:800}
+.steps{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:8px;align-content:start}
+.steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:var(--honey);color:var(--on-honey);display:grid;place-items:center;font:800 1rem var(--font-display)}
+.steps h3{font-size:1.05rem}
+.steps p{color:var(--muted);font-size:.93rem}
+
+footer{background:var(--foot-bg);color:var(--foot-fg);padding-block:36px}
+footer .cols{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+footer h3{font-size:1.05rem;margin-bottom:6px}
+footer p{color:var(--foot-muted);font-size:.93rem}
+
+/* layers */
+.layer{position:fixed;inset:0;z-index:50;background:rgba(8,13,36,.58);display:flex}
+.layer.modal{align-items:center;justify-content:center;padding:16px}
+.layer.drawer{justify-content:flex-end}
+.panel{position:relative;background:var(--surface);color:var(--ink);outline:none}
+.modal .panel{width:min(820px,100%);max-height:100%;overflow:auto;border-radius:20px;padding:26px}
+.modal .panel.sm{width:min(440px,100%)}
+.modal .panel.md{width:min(620px,100%)}
+.drawer .panel{width:min(440px,100%);height:100%;overflow:auto;padding:0 max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 20px}
+.drawer-head{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top,0px)) 0 12px;border-bottom:1px solid var(--line);margin-bottom:16px;z-index:2}
+.drawer-head h2{font-size:1.35rem;font-weight:800}
+.x{position:absolute;top:12px;right:12px}
+@media(max-width:640px){
+  .layer.modal{align-items:flex-end;padding:0}
+  .modal .panel{border-radius:20px 20px 0 0;max-height:94%;padding:22px max(16px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+}
+.pane h2{font-size:1.5rem;font-weight:800;padding-right:44px}
+.pane form{display:grid;gap:14px;margin-top:16px}
+.pane>p.sub{margin-top:8px;color:var(--muted)}
+.demo{background:var(--honey-soft);border-radius:10px;padding:10px 12px;font-size:.88rem}
+.otp{letter-spacing:.5em;text-align:center;font-weight:700;font-size:1.3rem}
+
+/* product detail */
+.pd-top{display:grid;gap:20px}
+.pd-art{aspect-ratio:4/3;padding:0}
+.pd-info{display:grid;gap:8px;align-content:start}
+.pd-info h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:800;padding-right:44px}
+.price-row.big strong{font-size:1.9rem}
+.pd-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.cod{display:flex;gap:8px;align-items:center;color:var(--leaf);font-weight:600;font-size:.92rem}
+@media(min-width:720px){.pd-top{grid-template-columns:1fr 1fr}}
+.pd-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);display:grid;gap:12px}
+.pd-sec h3{font-size:1.15rem}
+.ul-check{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.ul-check li{display:flex;gap:10px}
+.ul-check li::before{content:"";flex:none;width:18px;height:18px;margin-top:3px;border-radius:50%;background:var(--leaf-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='%2316794F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0}
+.specs div{background:var(--paper);border-radius:12px;padding:10px 12px}
+.specs dt{color:var(--muted);font-size:.82rem}
+.specs dd{margin:2px 0 0;font-weight:600}
+.vlinks{display:flex;flex-wrap:wrap;gap:8px}
+.locked{display:grid;margin-top:26px}
+.locked>*{grid-area:1/1}
+.ghost{display:grid;gap:12px;padding:20px;opacity:.55}
+.ghost i{display:block;height:14px;border-radius:7px;background:var(--line)}
+.locked-card{align-self:center;justify-self:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:420px;display:grid;gap:10px;text-align:center;box-shadow:0 14px 34px rgba(15,27,63,.16);margin:12px}
+.locked-card h3{font-size:1.15rem}
+.rev-list,.qa-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.rev{background:var(--paper);border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.rev-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.vbadge{background:var(--leaf-soft);color:var(--leaf);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.sbadge{background:var(--honey-soft);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.rev-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.rev-tools select{width:auto}
+.inline-form{display:grid;gap:10px;background:var(--paper);border-radius:12px;padding:14px}
+.inline-form .row{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:560px){.inline-form .row.two{grid-template-columns:140px 1fr}}
+
+/* cart, lists */
+.line{display:grid;grid-template-columns:72px 1fr;gap:12px;padding-block:14px;border-bottom:1px solid var(--line)}
+.thumb{width:72px;height:56px}
+.line h3{font-size:1rem;font-weight:700}
+.line .ctl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap}
+.qty{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:10px}
+.qty button{width:36px;height:36px;border:0;background:none;cursor:pointer;font-size:1.1rem;font-weight:700}
+.qty span{min-width:28px;text-align:center;font-weight:600}
+.sum{display:grid;gap:8px;margin-top:18px}
+.sum div{display:flex;justify-content:space-between}
+.sum .tot{font:800 1.25rem var(--font-display);border-top:1px solid var(--line);padding-top:10px}
+.checkout-grid{display:grid;gap:22px;margin-top:16px}
+.checkout-grid fieldset{border:0;padding:0;margin:0;display:grid;gap:12px}
+.checkout-grid legend{font:700 1.05rem var(--font-display);padding:0;margin-bottom:6px}
+.two-col{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.wa-row{display:grid;gap:10px;grid-template-columns:1fr auto;align-items:end}
+.verified{color:var(--leaf);font-weight:700;display:flex;align-items:center;gap:6px}
+.box{background:var(--paper);border-radius:14px;padding:14px;display:grid;gap:8px}
+.done{display:grid;gap:12px;justify-items:start}
+.done .big-ok{width:56px;height:56px;border-radius:50%;background:var(--leaf-soft);color:var(--leaf);display:grid;place-items:center}
+.order{border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;margin-bottom:14px}
+.order-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.track{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.track li{position:relative;padding:0 0 12px 26px;color:var(--muted);font-size:.92rem}
+.track li::before{content:"";position:absolute;left:0;top:4px;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:var(--surface)}
+.track li::after{content:"";position:absolute;left:6px;top:20px;bottom:-2px;width:2px;background:var(--line)}
+.track li:last-child{padding-bottom:0}.track li:last-child::after{display:none}
+.track li.done{color:var(--ink)}
+.track li.done::before{background:var(--leaf);border-color:var(--leaf)}
+.track li.now{color:var(--ink);font-weight:700}
+.track li.now::before{background:var(--honey);border-color:var(--honey)}
+
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));translate:-50% 20px;opacity:0;visibility:hidden;background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:12px;font-weight:600;z-index:90;max-width:calc(100% - 32px);transition:opacity .2s,translate .2s,visibility .2s}
+#toast.show{opacity:1;visibility:visible;translate:-50% 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ===== additions: banner, semantic tokens, dashboards ===== */
+.banner{background:var(--honey-soft);color:var(--ink);border-bottom:1px solid var(--line);padding-block:10px;font-size:.93rem}
+.banner.bad{background:var(--bad-soft);color:var(--bad-ink)}
+.banner .wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner strong{font-weight:700}
+.foot-links{display:flex;gap:18px;margin-top:20px;font-size:.85rem}
+footer a{color:var(--foot-muted)}
+.stock-note{color:var(--warn-ink);font-weight:600;font-size:.85rem}
+.oos{position:absolute;left:14px;bottom:14px;background:var(--bad-soft);color:var(--bad-ink);font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px}
+.card-art .vid + .oos{left:auto;right:14px}
+.qa-a{border-left:3px solid var(--honey);padding-left:10px}
+
+/* dashboards */
+#dash-root{min-height:100%}
+.dtop{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.dtop-in{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;padding-block:10px}
+.dbrand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font:800 1.15rem var(--font-display)}
+.dbrand svg{width:30px;height:30px}
+.role-badge{background:var(--ink);color:var(--surface);font:700 .75rem var(--font-body);padding:3px 10px;border-radius:999px}
+.dtop-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dtop-r select{width:auto;min-width:190px;min-height:40px}
+.dtop-r .btn{min-height:40px}
+.bell{position:relative}
+.dwrap{max-width:1400px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dash{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-block:16px 40px}
+@media(min-width:960px){.dash{grid-template-columns:240px minmax(0,1fr);gap:28px;align-items:start}}
+.dnav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.dnav .grp{display:none}
+.dnav button{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:0 14px;border:0;border-radius:10px;background:transparent;font-weight:600;cursor:pointer;white-space:nowrap;text-align:left}
+.dnav button:hover{background:var(--surface)}
+.dnav button[aria-current="page"]{background:var(--ink);color:var(--surface)}
+.dnav .n{background:var(--honey);color:var(--on-honey);border-radius:999px;font-size:.72rem;font-weight:700;padding:1px 8px}
+@media(min-width:960px){
+  .dnav{flex-direction:column;overflow:visible;position:sticky;top:calc(76px + env(safe-area-inset-top,0px));gap:2px}
+  .dnav button{width:100%}
+  .dnav .grp{display:block;margin:14px 0 4px;padding-left:14px;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em}
+  .dnav .grp:first-child{margin-top:0}
+}
+.dmain{min-width:0;display:grid;gap:18px;align-content:start;outline:none}
+.dh{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:10px 16px}
+.dh h1{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800}
+.dh p{color:var(--muted);margin-top:4px}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
+.dcard h2{font-size:1.1rem}
+.dcard h3{font-size:1rem}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:2px}
+.kpi span{color:var(--muted);font-size:.85rem}
+.kpi strong{font:800 1.6rem var(--font-display);font-variant-numeric:tabular-nums}
+.attn{display:grid;gap:8px}
+.attn button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:46px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--paper);cursor:pointer;text-align:left;font-weight:600}
+.attn button:hover{border-color:var(--ink)}
+.attn .sev{width:8px;align-self:stretch;border-radius:4px;background:var(--honey);flex:none}
+.attn .sev.bad{background:var(--bad)}
+.attn .sev.ok{background:var(--leaf)}
+.attn .t{flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.p-ok{background:var(--leaf-soft);color:var(--leaf)}
+.p-warn{background:var(--honey-soft);color:var(--warn-ink)}
+.p-bad{background:var(--bad-soft);color:var(--bad-ink)}
+.p-info{background:var(--info-soft);color:var(--info-ink)}
+.p-mute{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle;font-size:.93rem}
+th{font-size:.8rem;color:var(--muted);font-weight:700;background:var(--paper);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.row-btn{background:none;border:0;padding:0;color:var(--ink);font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
+.sm{min-height:36px;padding:0 12px;font-size:.88rem;border-radius:10px}
+.btn-bad{background:var(--bad);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-bad{color:#2A0E0C}}
+:root[data-theme="dark"] .btn-bad{color:#2A0E0C}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters-row input[type=search],.filters-row input[type=text]{width:min(260px,100%)}
+.filters-row select{width:auto}
+.fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.fgrid .full{grid-column:1/-1}
+.checks{display:grid;gap:4px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.checks label{display:flex;gap:10px;align-items:flex-start;min-height:34px;font-weight:500;cursor:pointer}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;min-height:0;flex:none;margin:2px 0 0;accent-color:var(--ink)}
+.checks .sens{color:var(--warn-ink);font-size:.78rem;font-weight:700}
+.groupT{font-size:.82rem;color:var(--muted);font-weight:700;margin-top:6px}
+.empty-s{padding:28px 16px;border:1.5px dashed var(--line);border-radius:14px;text-align:center;color:var(--muted)}
+.modal .panel.lg{width:min(880px,100%)}
+.dm h2{font-size:1.4rem;font-weight:800;padding-right:44px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dm .sec{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:10px}
+.dm .sec h3{font-size:1rem}
+.dm form{display:grid;gap:14px;margin-top:14px}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 12px;font-size:.93rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+@media(max-width:520px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:6px}}
+.copy-box{display:flex;gap:8px;align-items:center}
+.copy-box code{flex:1;min-width:0;overflow-wrap:anywhere;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.88rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.tag-s{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:2px 8px;font-size:.78rem}
+.ap{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.diff{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.92rem}
+.diff dt{color:var(--muted)}
+.diff dd{margin:0}
+.diff .old{text-decoration:line-through;color:var(--muted);margin-right:6px}
+.chart{width:100%;height:auto;display:block}
+.chart .bar{fill:var(--honey)}
+.chart .ax{stroke:var(--line);stroke-width:1}
+.chart text{fill:var(--muted);font:600 11px var(--font-body)}
+.hbar{display:grid;gap:8px}
+.hbar div{display:grid;grid-template-columns:minmax(90px,170px) 1fr auto;gap:10px;align-items:center;font-size:.9rem}
+.hbar i{display:block;height:12px;border-radius:6px;background:var(--honey);min-width:2px}
+.hbar b{font-variant-numeric:tabular-nums}
+.gate{max-width:520px;margin:48px auto;display:grid;gap:14px}
+.gate h1{font-size:1.6rem;font-weight:800}
+.note-s{background:var(--honey-soft);border-radius:12px;padding:10px 12px;font-size:.9rem}
+.stk{display:flex;gap:6px;align-items:center}
+.stk input{width:76px;min-height:36px;padding:0 8px}
+.thumb-s{width:54px;height:42px;flex:none}
+.pcell{display:flex;gap:10px;align-items:center;min-width:200px}
+</style>
+
+<div id="shop-root">
+<header class="site-head">
+  <div class="wrap head-row">
+    <button class="brand" data-act="home" aria-label="ProjectBee home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="var(--honey)"/><path d="M8 13h16M8 17.5h16M8 22h16" stroke="#0F1B3F" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span>ProjectBee</span>
+    </button>
+    <form class="search" id="search-form" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <label class="sr" for="q">Search projects</label>
+      <input id="q" type="search" placeholder="Search projects, subjects or class" autocomplete="off">
+    </form>
+    <nav class="head-actions" aria-label="Account and cart">
+      <button class="icon-btn" data-act="wish-open" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21l-1.4-1.3C5.4 15 2 12 2 8.5 2 5.6 4.3 3.5 7 3.5c1.5 0 3 .7 5 2.6 2-1.9 3.5-2.6 5-2.6 2.7 0 5 2.1 5 5 0 3.5-3.4 6.5-8.6 11.2z"/></svg>
+        <span class="count" id="wish-count" hidden>0</span>
+      </button>
+      <div class="acct-wrap">
+        <button class="btn btn-ghost acct-btn" id="acct-btn" data-act="login" aria-haspopup="true">Log in</button>
+        <div class="menu" id="acct-menu" hidden>
+          <p id="acct-email"></p>
+          <button data-act="orders-open">My orders</button>
+          <button data-act="logout">Log out</button>
+        </div>
+      </div>
+      <button class="icon-btn" data-act="cart-open" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+        <span class="count" id="cart-count" hidden>0</span>
+      </button>
+    </nav>
+  </div>
+</header>
+<div id="banner" class="banner" hidden></div>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Your school project, ready before the deadline.</h1>
+        <p class="lead">Ready-made science models, charts, kits and assignment files for CBSE and ICSE students in Classes 1 to 12. Pick your class, pick a project, pay when it arrives.</p>
+        <form class="finder" id="finder">
+          <div class="ff">
+            <span class="lbl" id="board-lbl">Board</span>
+            <div class="seg" role="radiogroup" aria-labelledby="board-lbl">
+              <button type="button" role="radio" aria-checked="true" data-act="board" data-v="all">All boards</button>
+              <button type="button" role="radio" aria-checked="false" data-act="board" data-v="CBSE">CBSE</button>
+              <button type="button" role="radio" aria-checked="false" data-act="board" data-v="ICSE">ICSE</button>
+            </div>
+          </div>
+          <div class="ff">
+            <label class="lbl" for="h-class">Class</label>
+            <select id="h-class"></select>
+          </div>
+          <button class="btn btn-primary" type="submit">Show projects</button>
+        </form>
+        <ul class="trust">
+          <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.5l2.4 2.4L13.7 8"/></svg>Cash on delivery. No online payment needed.</li>
+          <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.5l2.4 2.4L13.7 8"/></svg>Reviews come only from people who received the project.</li>
+          <li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.5l2.4 2.4L13.7 8"/></svg>Starting in Bangalore, more cities coming.</li>
+        </ul>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="board" id="hero-board"></div>
+        <div class="mini" id="hero-mini"></div>
+        <div class="note">Class 6 · Science<br>CBSE + ICSE</div>
+        <div class="tag">₹799 · Pay on delivery</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap shop" id="catalogue">
+    <div class="shop-head">
+      <h2>Browse projects</h2>
+      <p class="muted" id="count" aria-live="polite"></p>
+    </div>
+    <div class="cats" id="cats" role="group" aria-label="Project category"></div>
+    <div class="toolbar">
+      <button class="btn btn-ghost filter-toggle" id="ftoggle" data-act="filters-toggle" aria-expanded="false" aria-controls="filters">Filters</button>
+      <div class="right">
+        <button class="btn-link" id="clear-top" data-act="clear" hidden>Clear filters</button>
+        <label class="sr" for="sort">Sort projects</label>
+        <select id="sort">
+          <option value="featured">Featured</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="rating">Top rated</option>
+        </select>
+      </div>
+    </div>
+    <div class="shop-grid">
+      <aside class="filters" id="filters" aria-label="Filters">
+        <div>
+          <h3 id="sb-lbl">Board</h3>
+          <div class="seg" role="radiogroup" aria-labelledby="sb-lbl">
+            <button type="button" role="radio" aria-checked="true" data-act="board" data-v="all">All</button>
+            <button type="button" role="radio" aria-checked="false" data-act="board" data-v="CBSE">CBSE</button>
+            <button type="button" role="radio" aria-checked="false" data-act="board" data-v="ICSE">ICSE</button>
+          </div>
+        </div>
+        <div class="field">
+          <h3><label for="s-class">Class</label></h3>
+          <select id="s-class"></select>
+        </div>
+        <div>
+          <h3>Subject</h3>
+          <div class="subj" id="subj" role="group" aria-label="Subject"></div>
+        </div>
+        <div class="field">
+          <h3><label for="s-price">Price</label></h3>
+          <input id="s-price" type="range" min="200" max="1000" step="50" value="1000">
+          <div class="price-out"><span>Up to</span><span id="price-val">₹1,000</span></div>
+        </div>
+        <button class="btn btn-ghost" data-act="clear">Clear filters</button>
+      </aside>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section class="wrap how">
+    <h2>How ordering works</h2>
+    <ol class="steps">
+      <li><h3>Browse freely</h3><p>Search and filter by class, board and subject. No account needed to look around.</p></li>
+      <li><h3>Log in with an email code</h3><p>Open a project for full details. We email you a one-time code, so there is no password to remember.</p></li>
+      <li><h3>Verify your WhatsApp number</h3><p>At checkout we send a code to the WhatsApp number we will use for your order updates.</p></li>
+      <li><h3>Pay when it arrives</h3><p>Cash on delivery is the only payment option for now. Track the order from My orders.</p></li>
+    </ol>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div><h3>ProjectBee</h3><p>Ready-made school projects for CBSE and ICSE students. Starting in Bangalore.</p></div>
+    <div><h3>Children's privacy</h3><p>Reviews show a first name and class only. We use delivery and guardian details only to deliver and confirm your order.</p></div>
+    <div><h3>Payments</h3><p>Cash on delivery for now. UPI and cards are planned for a later release.</p></div>
+  </div>
+<div class="wrap foot-links"><a href="#admin">Admin login</a><a href="#super-admin">Super Admin</a></div>
+</footer>
+</div>
+<div id="dash-root" hidden></div>
+
+<!-- Product layer -->
+<div class="layer modal" id="lay-product" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="prod-title" tabindex="-1">
+    <button class="icon-btn x" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="prod-body"></div>
+  </div>
+</div>
+
+<!-- Cart -->
+<div class="layer drawer" id="lay-cart" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
+    <div class="drawer-head"><h2 id="cart-title">Your cart</h2><button class="icon-btn" data-act="close" aria-label="Close cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="cart-body"></div>
+  </div>
+</div>
+
+<!-- Wishlist -->
+<div class="layer drawer" id="lay-wish" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="wish-title" tabindex="-1">
+    <div class="drawer-head"><h2 id="wish-title">Saved projects</h2><button class="icon-btn" data-act="close" aria-label="Close wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="wish-body"></div>
+  </div>
+</div>
+
+<!-- Orders -->
+<div class="layer drawer" id="lay-orders" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="orders-title" tabindex="-1">
+    <div class="drawer-head"><h2 id="orders-title">My orders</h2><button class="icon-btn" data-act="close" aria-label="Close orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="orders-body"></div>
+  </div>
+</div>
+
+<!-- Checkout -->
+<div class="layer modal" id="lay-checkout" hidden>
+  <div class="panel md" role="dialog" aria-modal="true" aria-labelledby="co-title" tabindex="-1">
+    <button class="icon-btn x" data-act="close" aria-label="Close checkout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="co-body"></div>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="layer modal" id="lay-login" hidden>
+  <div class="panel sm" role="dialog" aria-modal="true" aria-labelledby="lg-title" tabindex="-1">
+    <button class="icon-btn x" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="pane" id="lg-p1">
+      <h2 id="lg-title">Log in with your email</h2>
+      <p class="sub">We send a one-time code. No password needed.</p>
+      <form id="lg-form1" novalidate>
+        <div class="field"><label for="lg-email">Email address</label><input id="lg-email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com"><p class="err" id="lg-email-e" aria-live="polite"></p></div>
+        <button class="btn btn-primary btn-block" type="submit">Send code</button>
+      </form>
+    </div>
+    <div class="pane" id="lg-p2" hidden>
+      <h2>Enter your code</h2>
+      <p class="sub" id="lg-sent"></p>
+      <form id="lg-form2" novalidate>
+        <div class="demo">Preview mode: no email is sent. Enter any 6 digits to continue.</div>
+        <div class="field"><label for="lg-code">6-digit code</label><input class="otp" id="lg-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><p class="err" id="lg-code-e" aria-live="polite"></p></div>
+        <button class="btn btn-primary btn-block" type="submit">Verify and continue</button>
+        <button class="btn btn-ghost btn-block" type="button" id="lg-resend" data-act="resend">Resend code</button>
+        <button class="btn-link" type="button" data-act="change-email">Use a different email</button>
+      </form>
+    </div>
+    <div class="pane" id="lg-p3" hidden>
+      <h2>Tell us about the student</h2>
+      <p class="sub">This helps us show projects for the right class. You can skip it and fill it in later.</p>
+      <form id="lg-form3" novalidate>
+        <div class="field"><label for="lg-name">Student's first name</label><input id="lg-name" autocomplete="given-name" placeholder="e.g. Aarav"><p class="err" id="lg-name-e" aria-live="polite"></p></div>
+        <div class="two-col">
+          <div class="field"><label for="lg-class">Class</label><select id="lg-class"></select></div>
+          <div class="field"><label for="lg-board">Board</label><select id="lg-board"><option value="">Select</option><option>CBSE</option><option>ICSE</option></select></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Save and continue</button>
+        <button class="btn-link" type="button" data-act="skip-profile">Skip for now</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard modal -->
+<div class="layer modal" id="lay-dm" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Details" tabindex="-1">
+    <button class="icon-btn x" data-act="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="dm-body"></div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= constants ================= */
+var BOTH=['CBSE','ICSE'];
+var CATS=['Science Models','Chart Projects','Language Projects','Mathematics Projects','Educational Kits','School Assignment Materials'];
+var SUBJECTS=['Science','Mathematics','Social Science','Hindi','English','EVS'];
+var STATUS=['Order placed','Confirmed on WhatsApp','Packed','Out for delivery','Delivered'];
+var NEXT=['Confirm on WhatsApp','Mark as packed','Mark as out for delivery','Mark as delivered'];
+var REASONS=['Abusive language','Personal information','Spam or fake review','Off-topic'];
+var STOCK=[25,18,30,40,40,45,45,22,16,12,14,60];
+var STARTER=[
+ {id:'solar',name:'Solar System Working Model',cat:'Science Models',subject:'Science',classes:[5,8],boards:BOTH,price:799,mrp:999,video:true,size:'45 × 35 cm base',days:'3 to 5 days',blurb:'Eight painted planets orbit a sun on a sturdy stand, with labels and a fact sheet for your presentation.',includes:['Painted sun and eight planets','Stand with orbit rods','Printed planet labels','One-page fact sheet']},
+ {id:'volcano',name:'Volcano Eruption Model',cat:'Science Models',subject:'Science',classes:[4,7],boards:BOTH,price:549,mrp:699,video:true,size:'30 cm tall',days:'3 to 5 days',blurb:'A moulded volcano that erupts on demand. Comes with the eruption powder and a labelled cross-section card.',includes:['Moulded volcano with painted slopes','Eruption powder sachets','Red food colour','Labelled cross-section card']},
+ {id:'water',name:'Water Cycle Working Model',cat:'Science Models',subject:'EVS',classes:[3,6],boards:BOTH,price:449,mrp:549,video:true,size:'35 × 25 cm base',days:'3 to 5 days',blurb:'A clear dome and landscape that shows evaporation, condensation and rain, with step cards for each stage.',includes:['Clear dome and landscape base','Small pump and tubing','Cloud and sun cut-outs','Step cards for each stage']},
+ {id:'digest',name:'Human Digestive System Chart',cat:'Chart Projects',subject:'Science',classes:[7,10],boards:BOTH,price:349,mrp:449,video:false,size:'A1 chart board',days:'2 to 4 days',blurb:'A mounted, fully labelled chart of the digestive system with organ cut-outs and a short notes card.',includes:['Printed and mounted A1 chart','Labelled organ cut-outs','Short notes card']},
+ {id:'india',name:'Political Map of India Chart',cat:'Chart Projects',subject:'Social Science',classes:[6,9],boards:BOTH,price:299,mrp:379,video:false,size:'A1 chart board',days:'2 to 4 days',blurb:'States and capitals in clear colours on a mounted chart, with a quick-reference list on the side.',includes:['Printed and mounted A1 map','State and capital list','Sticker flags']},
+ {id:'parts',name:'Parts of Speech Grammar Chart',cat:'Language Projects',subject:'English',classes:[3,7],boards:BOTH,price:249,mrp:299,video:false,size:'A2 chart board',days:'2 to 4 days',blurb:'Nouns, verbs, adjectives and more, each with examples in its own colour block.',includes:['Printed and mounted A2 chart','Colour-coded example cards']},
+ {id:'hindi',name:'Hindi Varnamala Chart',cat:'Language Projects',subject:'Hindi',classes:[1,4],boards:BOTH,price:229,mrp:279,video:false,size:'A2 chart board',days:'2 to 4 days',blurb:'Swar and vyanjan with a picture for every letter. Bright, large and easy to read from a distance.',includes:['Printed and mounted A2 chart','Letter flash cards']},
+ {id:'geometry',name:'Geometry Shapes Model Set',cat:'Mathematics Projects',subject:'Mathematics',classes:[5,8],boards:BOTH,price:499,mrp:599,video:true,size:'Set of 12 shapes',days:'3 to 5 days',blurb:'Solid, painted 3D shapes with their faces, edges and vertices marked, mounted on a display board.',includes:['Twelve painted shapes','Display board','Faces, edges and vertices card']},
+ {id:'pythag',name:'Pythagoras Theorem Working Demo',cat:'Mathematics Projects',subject:'Mathematics',classes:[8,10],boards:['CBSE'],price:599,mrp:749,video:true,size:'30 × 30 cm board',days:'3 to 5 days',blurb:'Fill the squares on the two shorter sides and watch them fill the square on the longest side.',includes:['Board with fixed triangle','Three transparent square trays','Coloured sand','Step-by-step proof card']},
+ {id:'circuit',name:'Simple Electric Circuit Kit',cat:'Educational Kits',subject:'Science',classes:[6,10],boards:BOTH,price:899,mrp:1099,video:true,size:'Boxed kit',days:'3 to 5 days',blurb:'Build a working circuit with a cell, switch and bulb, then explain how each part works.',includes:['Cells and holder','Switch, bulb and holder','Connecting wires','Instruction card']},
+ {id:'cell',name:'Plant Cell 3D Model',cat:'Science Models',subject:'Science',classes:[8,10],boards:BOTH,price:649,mrp:799,video:false,size:'25 cm wide',days:'3 to 5 days',blurb:'A cut-away plant cell with a removable nucleus, vacuole and chloroplasts, each labelled by flag.',includes:['Cut-away cell body','Removable organelles','Label flags','Notes card']},
+ {id:'essay',name:'Essay Writing Project File',cat:'School Assignment Materials',subject:'English',classes:[8,12],boards:['ICSE'],price:399,mrp:499,video:false,size:'A4 file',days:'2 to 4 days',blurb:'A neat file with a cover page, divider sheets and a planning guide for assignments and portfolios.',includes:['Printed cover page','Divider sheets','Planning guide','Index sheet']}
+];
+STARTER.forEach(function(p,i){p.art=p.id;p.stock=STOCK[i];p.status='active'});
+var STARTER_ROLES=[
+ {id:'catalogue',name:'Catalogue Manager',preset:true,perms:['products.view','products.edit','inventory.edit','questions.answer']},
+ {id:'orders',name:'Order Manager',preset:true,perms:['orders.view','orders.update','orders.fullcontact','customers.view']},
+ {id:'inventory',name:'Inventory Manager',preset:true,perms:['products.view','inventory.edit']},
+ {id:'marketing',name:'Marketing Manager',preset:true,perms:['products.view','reviews.view','reports.view']},
+ {id:'support',name:'Support Executive',preset:true,perms:['orders.view','customers.view','reviews.view','reviews.hide','questions.answer']}
+];
+var PERMS=[
+ ['Catalogue','products.view','View products'],['Catalogue','products.edit','Add and edit products'],['Catalogue','inventory.edit','Update stock'],
+ ['Catalogue','products.bulkprice','Change prices in bulk',1],['Catalogue','products.delete','Delete products',1],
+ ['Orders','orders.view','View orders'],['Orders','orders.update','Update order status'],['Orders','orders.fullcontact','See full customer contact details',1],['Orders','orders.refund','Record refunds',1],
+ ['Customers','customers.view','View customers (masked)'],['Customers','customers.export','Request customer data export',1],
+ ['Reviews and questions','reviews.view','View reviews'],['Reviews and questions','reviews.hide','Hide reviews'],['Reviews and questions','questions.answer','Answer product questions'],
+ ['Reports','reports.view','View reports']
+];
+var DEFAULTS={
+ maintenance:{on:false,message:'We are updating ProjectBee. You can still browse projects.',returnAt:''},
+ cod:{enabled:true,minOrder:0},
+ delivery:{fee:49,freeAbove:999},
+ approvals:{bulkPrice:true,discount:{on:true,pct:40},deleteProduct:true,exportCustomers:true,refund:{on:true,amount:500}},
+ alerts:{approvals:true,security:true,lowStock:true,delivery:true},
+ retentionDays:365,lowStock:5
+};
+
+var ART={
+ solar:['#CFE3FF','Solar system model','<circle cx="34" cy="75" r="24" fill="#FFB800"/><g fill="none" stroke="#0F1B3F" stroke-opacity=".28"><ellipse cx="34" cy="75" rx="52" ry="30"/><ellipse cx="34" cy="75" rx="82" ry="46"/><ellipse cx="34" cy="75" rx="112" ry="62"/></g><circle cx="86" cy="75" r="5" fill="#8C6D5A"/><circle cx="116" cy="75" r="8" fill="#E88B4D"/><circle cx="146" cy="75" r="10" fill="#2F6BFF"/><circle cx="60" cy="48" r="5" fill="#D94F4F"/><circle cx="90" cy="119" r="7" fill="#7AC27F"/>'],
+ volcano:['#FFE9A8','Volcano model','<circle cx="104" cy="32" r="9" fill="#fff" opacity=".9"/><circle cx="118" cy="22" r="12" fill="#fff" opacity=".8"/><circle cx="136" cy="14" r="8" fill="#fff" opacity=".7"/><polygon points="40,132 100,45 160,132" fill="#7A4B3A"/><polygon points="86,62 100,45 114,62 108,70 100,64 92,70" fill="#FF5A36"/><path d="M100 64L104 90 98 112 102 132 90 132 96 100Z" fill="#FF5A36"/><rect y="130" width="200" height="20" fill="#3B7D4F"/>'],
+ water:['#D9F0FF','Water cycle model','<circle cx="40" cy="30" r="14" fill="#FFB800"/><ellipse cx="150" cy="38" rx="30" ry="13" fill="#fff"/><circle cx="132" cy="38" r="13" fill="#fff"/><circle cx="162" cy="30" r="14" fill="#fff"/><g stroke="#2F6BFF" stroke-width="3" stroke-linecap="round"><path d="M140 58v14M152 58v14M164 58v14"/></g><polygon points="18,122 66,72 106,122" fill="#8E9CB2"/><path d="M0 118Q25 108 50 118T100 118T150 118T200 118V150H0Z" fill="#2F6BFF"/>'],
+ digest:['#FFE3E3','Digestive system chart',null],
+ india:['#D6F0DF','Map chart',null],
+ parts:['#FFE9A8','Grammar chart',null],
+ hindi:['#FFD9C7','Hindi alphabet chart',null],
+ geometry:['#E9E2FF','Geometry shapes','<polygon points="30,112 70,112 50,70" fill="#FFB800"/><rect x="82" y="70" width="42" height="42" fill="#2F6BFF"/><circle cx="154" cy="91" r="22" fill="#E88B4D"/><rect y="120" width="200" height="30" fill="#0F1B3F" opacity=".12"/>'],
+ pythag:['#E9E2FF','Pythagoras demo','<polygon points="76,60 112,96 148,60 112,24" fill="#E88B4D"/><rect x="40" y="60" width="36" height="36" fill="#2F6BFF" opacity=".85"/><rect x="76" y="96" width="36" height="36" fill="#7AC27F"/><polygon points="76,60 76,96 112,96" fill="#FFB800" stroke="#0F1B3F" stroke-width="2"/>'],
+ circuit:['#D6F0DF','Electric circuit kit','<rect x="30" y="62" width="34" height="26" rx="4" fill="#0F1B3F"/><rect x="64" y="70" width="6" height="10" fill="#FFB800"/><path d="M47 62V36H140V50M47 88V114H140V96" fill="none" stroke="#2F6BFF" stroke-width="4"/><circle cx="140" cy="73" r="22" fill="#FFE680" stroke="#0F1B3F" stroke-width="3"/><path d="M130 80l6-12 4 8 4-8 6 12" fill="none" stroke="#0F1B3F" stroke-width="2.5"/>'],
+ cell:['#FFD9C7','Plant cell model','<ellipse cx="100" cy="76" rx="76" ry="56" fill="#9BD97C" stroke="#3B7D4F" stroke-width="4"/><ellipse cx="100" cy="76" rx="64" ry="44" fill="#D7F2C7"/><circle cx="116" cy="70" r="20" fill="#2F6BFF"/><circle cx="116" cy="70" r="7" fill="#0F1B3F"/><ellipse cx="62" cy="92" rx="12" ry="7" fill="#3B9B5A"/><ellipse cx="78" cy="56" rx="10" ry="6" fill="#3B9B5A"/><ellipse cx="140" cy="100" rx="11" ry="6" fill="#3B9B5A"/>'],
+ essay:['#E4E9F2','Project file','<rect x="44" y="28" width="112" height="98" rx="8" fill="#FFB800"/><rect x="54" y="42" width="92" height="76" rx="4" fill="#fff"/><g stroke="#8E9CB2" stroke-width="3" stroke-linecap="round"><path d="M64 58h72M64 72h72M64 86h50"/></g><rect x="64" y="98" width="30" height="10" rx="3" fill="#2F6BFF"/>']
+};
+var ART_NAMES={solar:'Planets',volcano:'Volcano',water:'Water cycle',digest:'Body chart',india:'Map chart',parts:'Grammar chart',hindi:'Hindi chart',geometry:'Shapes',pythag:'Triangle demo',circuit:'Circuit',cell:'Cell model',essay:'Project file'};
+var CHART_INNER={
+ digest:'<path d="M70 52q32 0 32 16t-32 16 32 16" stroke="#E8707B" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="142" cy="60" r="12" fill="#F5B6A0"/><rect x="134" y="76" width="16" height="44" rx="8" fill="#F5B6A0"/>',
+ india:'<circle cx="100" cy="82" r="30" fill="#CFE3FF" stroke="#0F1B3F" stroke-width="2.5"/><ellipse cx="100" cy="82" rx="14" ry="30" fill="none" stroke="#0F1B3F" stroke-width="2"/><path d="M70 82h60M76 64h48M76 100h48" stroke="#0F1B3F" stroke-width="2"/>',
+ parts:'<text x="100" y="92" text-anchor="middle" font-size="40" font-weight="800" font-family="Georgia,serif" fill="#0F1B3F">Aa</text><rect x="48" y="104" width="30" height="14" rx="7" fill="#E88B4D"/><rect x="85" y="104" width="30" height="14" rx="7" fill="#2F6BFF"/><rect x="122" y="104" width="30" height="14" rx="7" fill="#7AC27F"/>',
+ hindi:'<text x="100" y="92" text-anchor="middle" font-size="36" font-weight="700" fill="#0F1B3F">अ आ इ</text><rect x="48" y="104" width="30" height="14" rx="7" fill="#E88B4D"/><rect x="85" y="104" width="30" height="14" rx="7" fill="#2F6BFF"/><rect x="122" y="104" width="30" height="14" rx="7" fill="#7AC27F"/>'
+};
+var CHART_ACC={digest:'#E8707B',india:'#16794F',parts:'#2F6BFF',hindi:'#E88B4D'};
+function artSvg(p){
+  var key=ART[p.art]?p.art:(ART[p.id]?p.id:'essay'), a=ART[key], inner=a[2];
+  if(inner===null){
+    inner='<rect width="200" height="150" fill="'+a[0]+'"/><rect x="28" y="12" width="144" height="126" rx="6" fill="#fff"/><rect x="28" y="12" width="144" height="24" rx="6" fill="'+CHART_ACC[key]+'"/><rect x="40" y="20" width="70" height="8" rx="4" fill="#fff" opacity=".85"/>'+CHART_INNER[key];
+  } else inner='<rect width="200" height="150" fill="'+a[0]+'"/>'+inner;
+  return '<svg viewBox="0 0 200 150" role="img" aria-label="'+esc(a[1])+' illustration" preserveAspectRatio="xMidYMid slice">'+inner+'</svg>';
+}
+
+/* ================= helpers ================= */
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function inr(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function fd(ts){return ts?new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):''}
+function fday(ts){return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
+function rid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function hash(s){var h=5381;s=String(s||'');for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return 'u'+(h>>>0).toString(36)}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+function dm(a,b){var o={};Object.keys(a).forEach(function(k){o[k]=a[k]});Object.keys(b||{}).forEach(function(k){o[k]=(a[k]&&typeof a[k]==='object'&&!Array.isArray(a[k])&&b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))?dm(a[k],b[k]):b[k]});return o}
+function vals(o){return Object.keys(o||{}).map(function(k){return o[k]})}
+var starsTxt=function(n){return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n)};
+var HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21l-1.4-1.3C5.4 15 2 12 2 8.5 2 5.6 4.3 3.5 7 3.5c1.5 0 3 .7 5 2.6 2-1.9 3.5-2.6 5-2.6 2.7 0 5 2.1 5 5 0 3.5-3.4 6.5-8.6 11.2z"/></svg>';
+var CHECK='<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.5l2.4 2.4L13.7 8"/></svg>';
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('show')},3200)}
+function setErr(id,msg){var el=$('#'+id),e=$('#'+id+'-e');if(el)el.setAttribute('aria-invalid',msg?'true':'false');if(e)e.textContent=msg||''}
+function mphone(p){p=String(p||'');return p.length>=10?p.slice(0,2)+'XXXXXX'+p.slice(-2):'XXXXXXXXXX'}
+function memail(e){e=String(e||'');var i=e.indexOf('@');return i>1?e.slice(0,1)+'***'+e.slice(i):'***'}
+
+/* ================= state ================= */
+var S={
+  route:'shop',mode:'loading',db:null,dl:null,uid:null,isOwner:false,canEdit:false,slow:false,dataErr:'',
+  D:{products:{},orders:{},reviews:{},questions:{},admins:{},roles:{},invites:{},approvals:{},audit:{},settings:{}},
+  user:store.get('pb2.user',null),cart:store.get('pb2.cart',[]),wish:store.get('pb2.wish',[]),
+  f:{board:'all',cls:'all',subject:'all',cat:'all',max:null,q:'',sort:'featured'},
+  current:null,revSort:'helpful',pending:null,email:'',waVerified:'',waCode:'',timer:null,
+  session:store.get('pb2.session',null),actAs:store.get('pb2.actAs',null),
+  view:{super:'overview',admin:'overview'},reveal:{},dirty:false,
+  q:{orders:{st:'all',t:''},products:{t:'',cat:'all'},reviews:{f:'all'},audit:{t:'',a:'all'},customers:{t:''}},
+  adminLogin:{step:1,email:'',rec:null}
+};
+function cfg(){return dm(DEFAULTS,S.D.settings)}
+
+/* ================= data layer ================= */
+function saveLocal(){if(S.mode==='local')store.set('pb2.local',S.D)}
+function seedLocal(){
+  var d={products:{},orders:{},reviews:{},questions:{},admins:{},roles:{},invites:{},approvals:{},audit:{},settings:{}};
+  STARTER.forEach(function(p){d.products[p.id]=JSON.parse(JSON.stringify(p))});
+  STARTER_ROLES.forEach(function(r){d.roles[r.id]=JSON.parse(JSON.stringify(r))});
+  return d;
+}
+var renderQ=0;
+function scheduleRender(){
+  if(renderQ)return;
+  renderQ=requestAnimationFrame(function(){
+    renderQ=0;
+    var a=document.activeElement;
+    if(S.route!=='shop'&&a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&a.closest&&a.closest('#dash-main')){S.dirty=true;return}
+    render();
+  });
+}
+document.addEventListener('focusout',function(){
+  if(!S.dirty)return;
+  setTimeout(function(){var a=document.activeElement;if(!(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&a.closest&&a.closest('#dash-main'))){S.dirty=false;render()}},250);
+});
+function werr(e){
+  var c=e&&e.code;
+  toast(c==='quota_exceeded'?'Storage is full. Delete some old records and try again.':'This change could not be saved. Your access level may not allow it.');
+  return false;
+}
+async function wDoc(col,id,data,opt){
+  var merge=opt&&opt.merge, cur=S.D[col][id];
+  S.D[col][id]=(merge&&cur)?Object.assign({},cur,data):data;
+  scheduleRender();
+  if(S.mode==='db'){
+    try{
+      var ref=S.db.collection(col).doc(id);
+      if(merge){var sn=await ref.get();if(sn.exists)await ref.update(data);else await ref.set(S.D[col][id])}
+      else await ref.set(data);
+    }catch(e){return werr(e)}
+  }else saveLocal();
+  return true;
+}
+async function wDel(col,id){
+  delete S.D[col][id];scheduleRender();
+  if(S.mode==='db'){try{await S.db.collection(col).doc(id).delete()}catch(e){return werr(e)}}else saveLocal();
+  return true;
+}
+async function wSettings(obj){
+  S.D.settings=obj;scheduleRender();
+  if(S.mode==='db'){try{await S.db.doc('config/settings').set(obj)}catch(e){return werr(e)}}else saveLocal();
+  return true;
+}
+async function wItem(col,item,ownerUid){
+  S.D[col][item.id]=Object.assign({},S.D[col][item.id],item);scheduleRender();
+  if(S.mode==='db'){
+    if(!ownerUid)return werr({});
+    try{
+      var ref=S.db.doc(col+'/'+ownerUid),sn=await ref.get(),p={items:{}};
+      p.items[item.id]=item;
+      if(sn.exists)await ref.update(p);else await ref.set(p);
+    }catch(e){return werr(e)}
+  }else saveLocal();
+  return true;
+}
+function subscribeAll(){
+  var db=S.db;
+  var timer=setTimeout(function(){S.slow=true;scheduleRender()},10000);
+  function got(){clearTimeout(timer);if(S.slow){S.slow=false}}
+  function onErr(e){got();S.dataErr=(e&&e.code)||'error';scheduleRender()}
+  ['products','admins','roles','invites','approvals','audit'].forEach(function(c){
+    db.collection(c).onSnapshot(function(snap){got();var m={};snap.docs.forEach(function(d){m[d.id]=d.data()});S.D[c]=m;scheduleRender()},onErr);
+  });
+  db.doc('config/settings').onSnapshot(function(s){got();S.D.settings=s.exists?s.data():{};scheduleRender()},onErr);
+  ['orders','reviews','questions'].forEach(function(c){
+    db.collection(c).onSnapshot(function(snap){
+      got();var m={};
+      snap.docs.forEach(function(d){var it=(d.data()||{}).items||{};Object.keys(it).forEach(function(k){m[k]=it[k]})});
+      S.D[c]=m;scheduleRender();
+    },onErr);
+  });
+}
+
+/* ================= derived shop data ================= */
+function prods(){return Object.keys(S.D.products).map(function(k){var p=S.D.products[k];if(!p.id)p.id=k;return p})}
+function liveProds(){return prods().filter(function(p){return p.status!=='hidden'})}
+function byId(id){return S.D.products[id]}
+function myAk(){return S.user?hash(S.user.email):''}
+function reviewsOf(pid){return vals(S.D.reviews).filter(function(r){return r.kind==='review'&&r.pid===pid&&r.status!=='hidden'&&r.status!=='deleted'})}
+function votesOf(id){return vals(S.D.reviews).filter(function(r){return r.kind==='vote'&&r.rid===id&&r.on!==false}).length}
+function iVoted(id){var k=myAk();return !!k&&vals(S.D.reviews).some(function(r){return r.kind==='vote'&&r.rid===id&&r.ak===k&&r.on!==false})}
+function ratingOf(pid){var l=reviewsOf(pid);if(!l.length)return null;return {avg:l.reduce(function(s,r){return s+r.stars},0)/l.length,n:l.length}}
+function myOrders(){if(!S.user)return [];return vals(S.D.orders).filter(function(o){return o.customer&&o.customer.email===S.user.email}).sort(function(a,b){return b.ts-a.ts})}
+function canReview(pid){
+  if(!S.user)return false;
+  var got=myOrders().some(function(o){return o.status===4&&(o.items||[]).some(function(i){return i.id===pid})});
+  var k=myAk();
+  return got&&!vals(S.D.reviews).some(function(r){return r.kind==='review'&&r.pid===pid&&r.ak===k});
+}
+function maint(){var m=cfg().maintenance;return !!m.on}
+function stockOf(p){return typeof p.stock==='number'?p.stock:999}
+
+/* ================= router ================= */
+function routeFrom(){var h=(location.hash||'').replace('#','');S.route=h==='admin'?'admin':(h==='super-admin'?'super':'shop')}
+window.addEventListener('hashchange',function(){routeFrom();closeAll();render();window.scrollTo(0,0)});
+
+/* ================= layers ================= */
+var stack=[],lastFocus=null;
+function openLayer(id){
+  var el=document.getElementById(id);
+  if(!stack.length)lastFocus=document.activeElement;
+  el.hidden=false;if(stack.indexOf(id)<0)stack.push(id);
+  document.documentElement.classList.add('lock');
+  var pn=el.querySelector('.panel');if(pn){pn.scrollTop=0;setTimeout(function(){pn.focus()},0)}
+}
+function closeLayer(id){
+  var el=document.getElementById(id);if(!el)return;
+  el.hidden=true;stack=stack.filter(function(x){return x!==id});
+  if(id==='lay-login'&&S.timer){clearInterval(S.timer);S.timer=null}
+  if(!stack.length){document.documentElement.classList.remove('lock');if(lastFocus&&lastFocus.focus){try{lastFocus.focus()}catch(e){}}}
+}
+function closeAll(){stack.slice().forEach(closeLayer)}
+document.addEventListener('keydown',function(e){
+  if(!stack.length)return;
+  var top=document.getElementById(stack[stack.length-1]);
+  if(e.key==='Escape'){closeLayer(top.id);return}
+  if(e.key==='Tab'){
+    var f=[].slice.call(top.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea')).filter(function(n){return n.offsetParent!==null});
+    if(!f.length)return;
+    var first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&(document.activeElement===first||document.activeElement===top.querySelector('.panel'))){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+});
+document.querySelectorAll('.layer').forEach(function(l){l.addEventListener('mousedown',function(e){if(e.target===l)closeLayer(l.id)})});
+
+/* ================= shop: catalogue ================= */
+function classOptions(sel,first){
+  var h='<option value="'+first[0]+'">'+first[1]+'</option>';
+  for(var i=1;i<=12;i++)h+='<option value="'+i+'">Class '+i+'</option>';
+  sel.innerHTML=h;
+}
+function filtered(){
+  var f=S.f,toks=f.q.toLowerCase().split(/\s+/).filter(Boolean);
+  var out=liveProds().filter(function(p){
+    if(f.board!=='all'&&p.boards.indexOf(f.board)<0)return false;
+    if(f.cls!=='all'&&!(p.classes[0]<=+f.cls&&+f.cls<=p.classes[1]))return false;
+    if(f.subject!=='all'&&p.subject!==f.subject)return false;
+    if(f.cat!=='all'&&p.cat!==f.cat)return false;
+    if(f.max!==null&&p.price>f.max)return false;
+    if(toks.length){
+      var cl='';for(var c=p.classes[0];c<=p.classes[1];c++)cl+=' class '+c;
+      var hay=(p.name+' '+p.subject+' '+p.cat+' '+p.blurb+' '+p.boards.join(' ')+cl).toLowerCase();
+      return toks.every(function(t){return hay.indexOf(t)>=0});
+    }
+    return true;
+  });
+  var s=f.sort;
+  if(s==='price-asc')out.sort(function(a,b){return a.price-b.price});
+  if(s==='price-desc')out.sort(function(a,b){return b.price-a.price});
+  if(s==='rating')out.sort(function(a,b){var x=ratingOf(a.id),y=ratingOf(b.id);return (y?y.avg:0)-(x?x.avg:0)});
+  return out;
+}
+function isFiltered(){var f=S.f;return f.board!=='all'||f.cls!=='all'||f.subject!=='all'||f.cat!=='all'||f.max!==null||f.q!==''}
+function renderCats(){
+  $('#cats').innerHTML=['All projects'].concat(CATS).map(function(c,i){
+    var v=i===0?'all':c;
+    return '<button class="chip" data-act="cat" data-v="'+esc(v)+'" aria-pressed="'+(S.f.cat===v)+'">'+esc(c)+'</button>';
+  }).join('');
+}
+function renderSubjects(){
+  $('#subj').innerHTML=['all'].concat(SUBJECTS).map(function(s){
+    return '<button class="chip" data-act="subject" data-v="'+s+'" aria-pressed="'+(S.f.subject===s)+'">'+(s==='all'?'All':s)+'</button>';
+  }).join('');
+}
+function syncPriceSlider(){
+  var top=Math.max(1000,Math.ceil(Math.max.apply(null,[0].concat(liveProds().map(function(p){return p.price})))/50)*50),sl=$('#s-price');
+  sl.max=top;sl.value=S.f.max===null?top:Math.min(S.f.max,top);
+  $('#price-val').textContent=inr(S.f.max===null?top:S.f.max);
+}
+function renderGrid(){
+  syncPriceSlider();
+  if(S.mode==='loading'){$('#grid').innerHTML='<div class="empty"><h3>Loading projects</h3><p class="muted">Getting the catalogue ready.</p></div>';$('#count').textContent='';return}
+  var list=filtered(),f=S.f,ctx=[];
+  if(f.cls!=='all')ctx.push('Class '+f.cls);
+  if(f.board!=='all')ctx.push(f.board);
+  $('#count').textContent=list.length+' project'+(list.length===1?'':'s')+(ctx.length?' for '+ctx.join(' · '):'');
+  $('#clear-top').hidden=!isFiltered();
+  if(!list.length){
+    if(!liveProds().length){
+      $('#grid').innerHTML='<div class="empty"><h3>The catalogue is being set up</h3><p class="muted">Projects will appear here as soon as they are added. Please check back soon.</p>'+(S.isOwner?'<a class="btn btn-primary" href="#super-admin">Open Super Admin to add projects</a>':'')+'</div>';
+    }else{
+      $('#grid').innerHTML='<div class="empty"><h3>No projects match these filters</h3><p class="muted">Try another class or subject, or clear the filters to see everything.</p><button class="btn btn-primary" data-act="clear">Clear filters</button></div>';
+    }
+    return;
+  }
+  var low=cfg().lowStock;
+  $('#grid').innerHTML=list.map(function(p){
+    var r=ratingOf(p.id),fav=S.wish.indexOf(p.id)>=0,off=p.mrp>p.price?Math.round((1-p.price/p.mrp)*100):0,st=stockOf(p);
+    return '<article class="card"><div class="card-art" data-act="open" data-id="'+p.id+'">'+artSvg(p)+
+      '<button class="heart" data-act="heart" data-id="'+p.id+'" aria-pressed="'+fav+'" aria-label="'+(fav?'Remove '+esc(p.name)+' from wishlist':'Save '+esc(p.name)+' to wishlist')+'">'+HEART+'</button>'+
+      (p.video?'<span class="vid">Demo video</span>':'')+(st<=0?'<span class="oos">Out of stock</span>':'')+'</div>'+
+      '<div class="card-body"><h3><button class="card-title" data-act="open" data-id="'+p.id+'">'+esc(p.name)+'</button></h3>'+
+      '<p class="meta">Class '+p.classes[0]+'–'+p.classes[1]+' · '+esc(p.subject)+' · '+esc(p.boards.join(', '))+'</p>'+
+      (r?'<div class="rate"><span class="stars" aria-hidden="true">'+starsTxt(Math.round(r.avg))+'</span><span>'+r.avg.toFixed(1)+' ('+r.n+')</span></div>':'<div class="rate">No reviews yet</div>')+
+      '<div class="price-row"><strong>'+inr(p.price)+'</strong>'+(off?'<s>'+inr(p.mrp)+'</s><span class="off">'+off+'% off</span>':'')+'</div>'+
+      (st>0&&st<=low?'<p class="stock-note">Only '+st+' left</p>':'')+'</div></article>';
+  }).join('');
+}
+
+/* ================= shop: header, banner ================= */
+function syncHeader(){
+  var n=S.cart.reduce(function(s,c){return s+c.qty},0),cc=$('#cart-count');cc.textContent=n;cc.hidden=!n;
+  var wc=$('#wish-count');wc.textContent=S.wish.length;wc.hidden=!S.wish.length;
+  var b=$('#acct-btn');
+  if(S.user){
+    var nm=S.user.name||S.user.email.split('@')[0];
+    b.innerHTML='<span class="avatar" aria-hidden="true">'+esc(nm.charAt(0).toUpperCase())+'</span><span>'+esc(nm.split(' ')[0])+'</span>';
+    b.setAttribute('data-act','account');b.setAttribute('aria-expanded','false');$('#acct-email').textContent=S.user.email;
+  }else{b.textContent='Log in';b.setAttribute('data-act','login');b.removeAttribute('aria-expanded');$('#acct-menu').hidden=true}
+}
+function renderBanner(){
+  var b=$('#banner'),m=cfg().maintenance,h='',cls='banner';
+  if(m.on){
+    h='<strong>Ordering is paused.</strong> '+esc(m.message||'')+(m.returnAt?' Back around '+esc(fd(new Date(m.returnAt).getTime()))+'.':'');
+  }else if(S.mode==='local'){
+    h='<strong>Preview mode.</strong> Orders and changes on this page are saved only on this device.';
+  }else if(S.slow){
+    h='<strong>Still connecting.</strong> The shared data has not answered yet. What you see may be out of date.';cls='banner bad';
+  }else if(S.dataErr){
+    h='<strong>Some data could not be loaded.</strong> Reload the page to try again.';cls='banner bad';
+  }
+  b.className=cls;b.hidden=!h;b.innerHTML=h?'<div class="wrap">'+h+'</div>':'';
+}
+
+/* ================= shop: login ================= */
+function showPane(id){
+  ['lg-p1','lg-p2','lg-p3'].forEach(function(p){$('#'+p).hidden=p!==id});
+  var f={'lg-p1':'#lg-email','lg-p2':'#lg-code','lg-p3':'#lg-name'}[id];
+  setTimeout(function(){var el=$(f);if(el)el.focus()},30);
+}
+function openLogin(after){
+  if(maint()){toast('Login is paused while we update the site.');return}
+  S.pending=after||null;setErr('lg-email','');setErr('lg-code','');$('#lg-code').value='';
+  showPane('lg-p1');openLayer('lay-login');
+}
+function startCountdown(){
+  var btn=$('#lg-resend'),left=30;clearInterval(S.timer);btn.disabled=true;btn.textContent='Resend code in '+left+'s';
+  S.timer=setInterval(function(){left--;if(left<=0){clearInterval(S.timer);S.timer=null;btn.disabled=false;btn.textContent='Resend code';return}btn.textContent='Resend code in '+left+'s'},1000);
+}
+function saveShop(){store.set('pb2.cart',S.cart);store.set('pb2.wish',S.wish);store.set('pb2.user',S.user)}
+function finishLogin(){saveShop();closeLayer('lay-login');render();toast('You are logged in');var fn=S.pending;S.pending=null;if(fn)fn()}
+
+/* ================= shop: cart ================= */
+function cartLines(){return S.cart.filter(function(c){return byId(c.id)})}
+function totals(){
+  var c=cfg().delivery,sub=cartLines().reduce(function(s,l){return s+byId(l.id).price*l.qty},0);
+  var del=sub===0?0:(sub>=c.freeAbove?0:c.fee);
+  return {sub:sub,del:del,total:sub+del};
+}
+function addToCart(id){
+  if(maint()){toast('Ordering is paused for now.');return}
+  if(!S.user){openLogin(function(){addToCart(id)});return}
+  var p=byId(id);if(!p||stockOf(p)<=0){toast('This project is out of stock.');return}
+  var l=S.cart.find(function(c){return c.id===id});
+  if(l)l.qty=Math.min(10,stockOf(p),l.qty+1);else S.cart.push({id:id,qty:1});
+  saveShop();render();toast('Added to cart');
+}
+function toggleWish(id){
+  if(!S.user){openLogin(function(){toggleWish(id)});return}
+  var i=S.wish.indexOf(id);
+  if(i>=0){S.wish.splice(i,1);toast('Removed from wishlist')}else{S.wish.push(id);toast('Saved to wishlist')}
+  saveShop();render();
+}
+function summaryRows(t){
+  return '<div class="sum"><div><span>Subtotal</span><span>'+inr(t.sub)+'</span></div><div><span>Delivery</span><span>'+(t.del?inr(t.del):'Free')+'</span></div><div class="tot"><span>Total to pay on delivery</span><span>'+inr(t.total)+'</span></div></div>';
+}
+function renderCart(){
+  var lines=cartLines();
+  if(!lines.length){$('#cart-body').innerHTML='<div class="empty"><h3>Your cart is empty</h3><p class="muted">Pick a project for your class and it will show up here.</p><button class="btn btn-primary" data-act="shop">Browse projects</button></div>';return}
+  var t=totals(),c=cfg();
+  $('#cart-body').innerHTML=lines.map(function(l){
+    var p=byId(l.id);
+    return '<div class="line"><div class="thumb">'+artSvg(p)+'</div><div><h3>'+esc(p.name)+'</h3><p class="meta">'+inr(p.price)+' each</p><div class="ctl"><div class="qty"><button data-act="qty" data-id="'+p.id+'" data-d="-1" aria-label="Decrease quantity of '+esc(p.name)+'">−</button><span aria-live="polite">'+l.qty+'</span><button data-act="qty" data-id="'+p.id+'" data-d="1" aria-label="Increase quantity of '+esc(p.name)+'">+</button></div><button class="btn-link" data-act="remove" data-id="'+p.id+'">Remove</button></div></div></div>';
+  }).join('')+summaryRows(t)+
+  (t.del?'<p class="hint" style="margin-top:8px">Add '+inr(c.delivery.freeAbove-t.sub)+' more for free delivery.</p>':'')+
+  '<div class="box" style="margin-top:16px"><div class="cod">'+CHECK+'Cash on delivery</div><p class="hint">You pay the delivery person when the project arrives.</p></div>'+
+  (c.cod.minOrder&&t.sub<c.cod.minOrder?'<p class="err" style="margin-top:10px">The minimum order is '+inr(c.cod.minOrder)+'. Add '+inr(c.cod.minOrder-t.sub)+' more to check out.</p>':'')+
+  '<button class="btn btn-primary btn-block" style="margin-top:16px" data-act="checkout"'+((c.cod.minOrder&&t.sub<c.cod.minOrder)||maint()?' disabled':'')+'>Continue to checkout</button>';
+}
+function renderWish(){
+  var ids=S.wish.filter(byId);
+  if(!ids.length){$('#wish-body').innerHTML='<div class="empty"><h3>Nothing saved yet</h3><p class="muted">Tap the heart on a project to keep it here for later.</p><button class="btn btn-primary" data-act="shop">Browse projects</button></div>';return}
+  $('#wish-body').innerHTML=ids.map(function(id){
+    var p=byId(id);
+    return '<div class="line"><div class="thumb">'+artSvg(p)+'</div><div><h3>'+esc(p.name)+'</h3><p class="meta">Class '+p.classes[0]+'–'+p.classes[1]+' · '+inr(p.price)+'</p><div class="ctl"><button class="btn btn-ghost" style="min-height:38px" data-act="open" data-id="'+p.id+'">View</button><button class="btn-link" data-act="heart" data-id="'+p.id+'">Remove</button></div></div></div>';
+  }).join('');
+}
+
+/* ================= shop: product detail ================= */
+function renderProduct(){
+  var p=byId(S.current);if(!p){$('#prod-body').innerHTML='<div class="empty"><h3>This project is no longer available</h3></div>';return}
+  var r=ratingOf(p.id),inCart=S.cart.some(function(c){return c.id===p.id}),fav=S.wish.indexOf(p.id)>=0,locked=!S.user&&!maint();
+  var off=p.mrp>p.price?Math.round((1-p.price/p.mrp)*100):0,st=stockOf(p),paused=maint();
+  var wa='https://wa.me/?text='+encodeURIComponent(p.name+' for Class '+p.classes[0]+'–'+p.classes[1]+' on ProjectBee, '+inr(p.price)+', cash on delivery.');
+  var buy=paused?'<button class="btn btn-primary" disabled>Ordering paused</button>'
+    :st<=0?'<button class="btn btn-primary" disabled>Out of stock</button>'
+    :!S.user?'<button class="btn btn-primary" data-act="login-add">Log in to add to cart</button>'
+    :inCart?'<button class="btn btn-primary" data-act="cart-open">In your cart · View cart</button>'
+    :'<button class="btn btn-primary" data-act="add" data-id="'+p.id+'">Add to cart</button>';
+  var h='<div class="pd-top"><div class="pd-art">'+artSvg(p)+'</div><div class="pd-info">'+
+    '<p class="meta">'+esc(p.cat)+'</p><h2 id="prod-title">'+esc(p.name)+'</h2>'+
+    '<p class="meta">Class '+p.classes[0]+'–'+p.classes[1]+' · '+esc(p.subject)+' · '+esc(p.boards.join(', '))+'</p>'+
+    (r?'<div class="rate"><span class="stars" aria-hidden="true">'+starsTxt(Math.round(r.avg))+'</span><span>'+r.avg.toFixed(1)+' from '+r.n+' review'+(r.n===1?'':'s')+'</span></div>':'')+
+    '<div class="price-row big"><strong>'+inr(p.price)+'</strong>'+(off?'<s>'+inr(p.mrp)+'</s><span class="off">'+off+'% off</span>':'')+'</div>'+
+    '<p class="muted">'+esc(p.blurb)+'</p>'+(st>0&&st<=cfg().lowStock?'<p class="stock-note">Only '+st+' left</p>':'')+
+    '<div class="pd-actions">'+buy+'<button class="btn btn-ghost" data-act="heart" data-id="'+p.id+'" aria-pressed="'+fav+'">'+(fav?'Saved':'Save')+'</button>'+
+    '<a class="btn btn-ghost" href="'+wa+'" target="_blank" rel="noopener">Share on WhatsApp</a></div>'+
+    '<div class="cod">'+CHECK+'Cash on delivery · Arrives in '+esc(p.days)+'</div></div></div>';
+  if(locked){
+    h+='<div class="locked"><div class="ghost" aria-hidden="true"><i style="width:40%"></i><i style="width:90%"></i><i style="width:75%"></i><i style="width:60%"></i><i style="width:85%"></i><i style="width:50%"></i></div>'+
+      '<div class="locked-card"><h3>See everything in this project</h3><p class="muted">Log in to see what is in the box, demo videos, reviews and questions. We email you a one-time code, so there is no password.</p><button class="btn btn-primary" data-act="login">Log in with email</button></div></div>';
+  }else{
+    h+='<div class="pd-sec"><h3>What is in the box</h3><ul class="ul-check">'+(p.includes||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>'+
+      '<dl class="specs"><div><dt>Finished size</dt><dd>'+esc(p.size)+'</dd></div><div><dt>Made for</dt><dd>Class '+p.classes[0]+'–'+p.classes[1]+'</dd></div><div><dt>Delivery</dt><dd>'+esc(p.days)+'</dd></div></dl></div>';
+    if(p.video){
+      var q=encodeURIComponent(p.name+' school project'),tag=p.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+      h+='<div class="pd-sec"><h3>See it working</h3><p class="muted">Demo videos open in a new tab.</p><div class="vlinks">'+
+        '<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query='+q+'">YouTube</a>'+
+        '<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.instagram.com/explore/tags/'+tag+'/">Instagram</a>'+
+        '<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.facebook.com/search/videos/?q='+q+'">Facebook</a></div></div>';
+    }
+    var list=reviewsOf(p.id).slice();
+    if(S.revSort==='helpful')list.sort(function(a,b){return votesOf(b.id)-votesOf(a.id)||b.ts-a.ts});else list.sort(function(a,b){return b.ts-a.ts});
+    h+='<div class="pd-sec" id="reviews"><div class="rev-tools"><h3>Reviews'+(r?' ('+r.n+')':'')+'</h3>'+(list.length>1?'<div><label class="sr" for="rv-sort">Sort reviews</label><select id="rv-sort"><option value="helpful"'+(S.revSort==='helpful'?' selected':'')+'>Most helpful</option><option value="new"'+(S.revSort==='new'?' selected':'')+'>Newest</option></select></div>':'')+'</div>';
+    h+=list.length?'<ul class="rev-list">'+list.map(function(x){
+      var mine=x.ak===myAk(),reported=vals(S.D.reviews).some(function(y){return y.kind==='report'&&y.rid===x.id&&y.ak===myAk()});
+      return '<li class="rev"><div class="rev-head"><span class="stars" role="img" aria-label="'+x.stars+' out of 5">'+starsTxt(x.stars)+'</span><strong>'+esc(x.name)+(x.cls?', Class '+esc(x.cls):'')+'</strong><span class="vbadge">Verified purchase</span></div><p>'+esc(x.text)+'</p><div class="acts"><button class="btn-link" data-act="helpful" data-rid="'+x.id+'" aria-pressed="'+iVoted(x.id)+'">Helpful ('+votesOf(x.id)+')</button>'+(mine?'':(reported?'<span class="hint">Reported</span>':'<button class="btn-link" data-act="report" data-rid="'+x.id+'">Report</button>'))+'</div></li>';
+    }).join('')+'</ul>':'<p class="muted">No reviews yet. Reviews appear after a verified buyer receives this project.</p>';
+    if(canReview(p.id)){
+      h+='<form class="inline-form" id="rv-form" novalidate><h4>Review this project</h4><div class="row two"><div class="field"><label for="rv-stars">Rating</label><select id="rv-stars"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></div><div class="field"><label for="rv-text">Your review</label><textarea id="rv-text" placeholder="What worked well? Was anything missing?"></textarea><p class="err" id="rv-text-e" aria-live="polite"></p></div></div><button class="btn btn-primary" type="submit">Post review</button><p class="hint">Shown with your first name and class only.</p></form>';
+    }else h+='<p class="hint">Only customers who received this project can review it. The review form opens after delivery.</p>';
+    h+='</div>';
+    var qs=vals(S.D.questions).filter(function(x){return x.pid===p.id&&(x.answer||x.ak===myAk())}).sort(function(a,b){return b.ts-a.ts});
+    h+='<div class="pd-sec"><h3>Questions</h3>'+(qs.length?'<ul class="qa-list">'+qs.map(function(x){return '<li class="rev"><p><strong>Q:</strong> '+esc(x.text)+'</p>'+(x.answer?'<p class="qa-a"><strong>A:</strong> '+esc(x.answer)+'</p>':'<p class="hint">Waiting for an answer from the ProjectBee team.</p>')+'</li>'}).join('')+'</ul>':'<p class="muted">No questions yet. Ask the first one.</p>')+
+      '<form class="inline-form" id="qa-form" novalidate><div class="field"><label for="qa-text">Ask about this project</label><input id="qa-text" placeholder="e.g. Does it come ready to submit?"><p class="err" id="qa-text-e" aria-live="polite"></p></div><button class="btn btn-ghost" type="submit">Ask question</button></form></div>';
+  }
+  $('#prod-body').innerHTML=h;
+}
+function openProduct(id,toReviews){
+  S.current=id;renderProduct();openLayer('lay-product');
+  if(toReviews&&S.user)setTimeout(function(){var r=$('#reviews');if(r)r.scrollIntoView({block:'start'})},60);
+}
+
+/* ================= shop: checkout ================= */
+function fld(id,label,type,auto,mode,max,val){
+  return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+type+'" autocomplete="'+auto+'"'+(mode?' inputmode="'+mode+'"':'')+(max?' maxlength="'+max+'"':'')+' value="'+esc(val||'')+'"><p class="err" id="'+id+'-e" aria-live="polite"></p></div>';
+}
+function openCheckout(){
+  var lines=cartLines();if(!lines.length)return;
+  if(maint()){toast('Ordering is paused for now.');return}
+  if(!cfg().cod.enabled){toast('Cash on delivery is not available right now.');return}
+  var u=S.user||{},t=totals();S.waVerified='';S.waCode='';
+  $('#co-body').innerHTML='<div id="co-form-wrap"><h2 id="co-title" style="font-size:1.6rem;font-weight:800;padding-right:44px">Delivery details</h2><p class="muted" style="margin-top:6px">Cash on delivery. You pay when the project arrives.</p>'+
+   '<div class="note-s" style="margin-top:12px">Preview build: use sample details, not a real family\'s phone number or address.</div>'+
+   '<form class="checkout-grid" id="co-form" novalidate>'+
+   '<fieldset><legend>Where should we deliver?</legend>'+fld('co-student','Student name','text','given-name','','',u.name||'')+
+   '<div class="field"><label for="co-class">Class</label><select id="co-class">'+[1,2,3,4,5,6,7,8,9,10,11,12].map(function(n){return '<option value="'+n+'"'+(String(u.cls)===String(n)?' selected':'')+'>Class '+n+'</option>'}).join('')+'</select></div>'+
+   fld('co-addr','Flat, building and street','text','street-address','','','')+fld('co-area','Area or locality','text','address-level3','','','')+
+   '<div class="two-col">'+fld('co-city','City','text','address-level2','','','Bengaluru')+fld('co-pin','Pincode','text','postal-code','numeric','6','')+'</div></fieldset>'+
+   '<fieldset><legend>Guardian contact</legend><div class="two-col">'+fld('co-guardian','Guardian name','text','name','','','')+fld('co-gphone','Guardian mobile number','tel','tel-national','numeric','10','')+'</div></fieldset>'+
+   '<fieldset><legend>Verify your WhatsApp number</legend><p class="hint">We confirm the order and share delivery updates on WhatsApp.</p>'+
+   '<div class="wa-row"><div class="field"><label for="co-wa">WhatsApp mobile number</label><input id="co-wa" type="tel" autocomplete="tel-national" inputmode="numeric" maxlength="10" placeholder="10-digit number"><p class="err" id="co-wa-e" aria-live="polite"></p></div><button class="btn btn-ghost" type="button" id="co-send" data-act="wa-send" style="margin-bottom:26px">Send code</button></div>'+
+   '<div id="co-otp" hidden><div class="demo">Preview mode: no WhatsApp message is sent. Enter any 6 digits.</div><div class="wa-row" style="margin-top:10px"><div class="field"><label for="co-code">6-digit code</label><input id="co-code" class="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······"><p class="err" id="co-code-e" aria-live="polite"></p></div><button class="btn btn-ghost" type="button" data-act="wa-verify" style="margin-bottom:26px">Verify</button></div></div>'+
+   '<p class="verified" id="co-ok" hidden>'+CHECK+'WhatsApp number verified</p></fieldset>'+
+   '<div class="box"><h3 style="font-size:1.05rem">Order summary</h3>'+lines.map(function(l){var p=byId(l.id);return '<div style="display:flex;justify-content:space-between;gap:12px"><span>'+esc(p.name)+' × '+l.qty+'</span><span>'+inr(p.price*l.qty)+'</span></div>'}).join('')+summaryRows(t)+'</div>'+
+   '<button class="btn btn-primary btn-block" type="submit" id="co-submit" disabled>Place order · Cash on delivery</button><p class="hint" id="co-hint">Verify your WhatsApp number to place the order.</p></form></div>';
+  openLayer('lay-checkout');
+}
+function validCheckout(){
+  var ok=true,v=function(id){return $('#'+id).value.trim()};
+  var rules=[['co-student',function(x){return x.length>=2},'Enter the student\'s name.'],['co-addr',function(x){return x.length>=5},'Enter the flat, building and street.'],['co-area',function(x){return x.length>=2},'Enter the area or locality.'],['co-city',function(x){return x.length>=2},'Enter the city.'],['co-pin',function(x){return /^\d{6}$/.test(x)},'Enter a 6-digit pincode.'],['co-guardian',function(x){return x.length>=2},'Enter the guardian\'s name.'],['co-gphone',function(x){return /^[6-9]\d{9}$/.test(x)},'Enter a 10-digit mobile number starting with 6, 7, 8 or 9.']];
+  rules.forEach(function(r){var good=r[1](v(r[0]));setErr(r[0],good?'':r[2]);if(!good)ok=false});
+  if(!ok){var bad=$('#co-form [aria-invalid="true"]');if(bad)bad.focus()}
+  return ok;
+}
+function markVerified(on){$('#co-ok').hidden=!on;$('#co-submit').disabled=!on;$('#co-hint').hidden=on}
+async function placeOrder(){
+  var btn=$('#co-submit');btn.disabled=true;
+  var lines=cartLines(),t=totals(),c=cfg();
+  if(c.cod.minOrder&&t.sub<c.cod.minOrder){toast('The minimum order is '+inr(c.cod.minOrder)+'.');btn.disabled=false;return}
+  var id='PB-'+Date.now().toString(36).toUpperCase().slice(-6);
+  var v=function(x){return $('#'+x).value.trim()};
+  var o={id:id,uid:S.uid||'',ts:Date.now(),status:0,total:t.total,sub:t.sub,del:t.del,pay:'COD',refund:0,
+    items:lines.map(function(l){var p=byId(l.id);return {id:l.id,qty:l.qty,price:p.price,name:p.name}}),
+    customer:{student:v('co-student'),cls:$('#co-class').value,board:(S.user&&S.user.board)||'',email:S.user.email},
+    addr:{line:v('co-addr'),area:v('co-area'),city:v('co-city'),pin:v('co-pin')},
+    guardian:{name:v('co-guardian'),phone:v('co-gphone')},wa:S.waVerified,log:[{ts:Date.now(),st:0,by:'Customer'}]};
+  var ok=await wItem('orders',o,S.uid);
+  if(!ok){delete S.D.orders[id];btn.disabled=false;toast('The order could not be saved. Ask the shop owner for Contributor access to this page.');return}
+  S.cart=[];saveShop();render();
+  $('#co-body').innerHTML='<div class="done"><div class="big-ok">'+CHECK.replace('width="18" height="18"','width="30" height="30"')+'</div><h2 id="co-title" style="font-size:1.6rem;font-weight:800">Order placed</h2><p>Your order number is <strong>'+id+'</strong>. We will confirm it on WhatsApp shortly. Keep '+inr(o.total)+' ready for the delivery person.</p><div class="pd-actions"><button class="btn btn-primary" data-act="track">Track my order</button><button class="btn btn-ghost" data-act="shop">Keep browsing</button></div></div>';
+  setTimeout(function(){$('#lay-checkout .panel').focus()},0);
+}
+function renderOrders(){
+  var list=myOrders();
+  if(!list.length){$('#orders-body').innerHTML='<div class="empty"><h3>No orders yet</h3><p class="muted">Orders you place will appear here with their delivery status.</p><button class="btn btn-primary" data-act="shop">Browse projects</button></div>';return}
+  $('#orders-body').innerHTML=list.map(function(o){
+    var cancelled=o.status<0;
+    return '<section class="order" aria-label="Order '+esc(o.id)+'"><div class="order-head"><div><strong>'+esc(o.id)+'</strong><p class="meta">'+fday(o.ts)+' · Cash on delivery</p></div><strong>'+inr(o.total)+'</strong></div>'+
+      '<ul class="ul-check">'+(o.items||[]).map(function(i){return '<li>'+esc(i.name)+' × '+i.qty+'</li>'}).join('')+'</ul>'+
+      (cancelled?'<p><span class="pill p-bad">Cancelled</span></p>':'<ol class="track">'+STATUS.map(function(s,i){return '<li class="'+(i<o.status?'done':i===o.status?'now':'')+'">'+s+'</li>'}).join('')+'</ol>')+
+      (o.status===4?'<div>'+(o.items||[]).map(function(i){return canReview(i.id)?'<button class="btn btn-ghost" style="min-height:38px;margin:0 8px 8px 0" data-act="review-item" data-id="'+i.id+'">Review '+esc(i.name)+'</button>':''}).join('')+'</div>':'')+
+      '</section>';
+  }).join('');
+}
+
+/* ================= shop: filters ================= */
+function setBoard(v){S.f.board=v;document.querySelectorAll('[data-act="board"]').forEach(function(b){b.setAttribute('aria-checked',String(b.getAttribute('data-v')===v))});renderGrid()}
+function setClass(v){S.f.cls=v;$('#h-class').value=v;$('#s-class').value=v;renderGrid()}
+function clearFilters(){
+  S.f={board:'all',cls:'all',subject:'all',cat:'all',max:null,q:'',sort:S.f.sort};
+  $('#q').value='';setBoard('all');setClass('all');renderCats();renderSubjects();
+}
+function toShop(){$('#catalogue').scrollIntoView({block:'start'})}
+
+/* ================= render root ================= */
+function render(){
+  var dash=S.route!=='shop';
+  $('#shop-root').hidden=dash;$('#dash-root').hidden=!dash;
+  if(dash){renderDash();return}
+  syncHeader();renderBanner();renderGrid();
+  if(!$('#lay-product').hidden)renderProduct();
+  if(!$('#lay-cart').hidden)renderCart();
+  if(!$('#lay-wish').hidden)renderWish();
+  if(!$('#lay-orders').hidden)renderOrders();
+}
+
+/* ================= dashboards: viewer and permissions ================= */
+function superAllowed(){return S.isOwner||S.mode==='local'}
+function permsOf(a){
+  var r=S.D.roles[a.roleId],set=new Set(r?r.perms||[]:[]);
+  (a.extra||[]).forEach(function(p){set.add(p)});(a.removed||[]).forEach(function(p){set.delete(p)});
+  return set;
+}
+function adminV(a,preview){return {isSuper:false,id:a.id,name:a.name,role:(S.D.roles[a.roleId]||{}).name||'No role',perms:permsOf(a),preview:preview}}
+var SUPERV={isSuper:true,id:'super',name:'Super Admin',role:'Super Admin'};
+function curV(){
+  if(S.route==='super')return superAllowed()?SUPERV:null;
+  if(S.route==='admin'){
+    if(superAllowed()){
+      if(S.actAs==='super')return SUPERV;
+      var a=S.D.admins[S.actAs];
+      return a&&a.status==='active'?adminV(a,true):null;
+    }
+    var s=S.session&&S.D.admins[S.session.id];
+    return s&&s.status==='active'&&(s.rev||0)===(S.session.rev||0)?adminV(s,false):null;
+  }
+  return null;
+}
+function can(V,p){return !!V&&(V.isSuper||(V.perms&&V.perms.has(p)))}
+function label(st){return st<0?'Cancelled':STATUS[st]}
+function log(action,target,detail){
+  var V=curV(),id=rid('a');
+  wDoc('audit',id,{id:id,ts:Date.now(),actor:V?V.name:'System',role:V?V.role:'',action:action,target:target||'',detail:detail||''});
+}
+function needsApproval(V,type,x){
+  if(V.isSuper)return false;
+  var a=cfg().approvals;
+  if(type==='deleteProduct')return !!a.deleteProduct;
+  if(type==='bulkPrice')return !!a.bulkPrice;
+  if(type==='discount')return !!(a.discount&&a.discount.on&&x.pct>a.discount.pct);
+  if(type==='exportCustomers')return !!a.exportCustomers;
+  if(type==='refund')return !!(a.refund&&a.refund.on&&x.amount>a.refund.amount);
+  return false;
+}
+async function requestApproval(V,type,summary,payload){
+  var id=rid('ap');
+  var ok=await wDoc('approvals',id,{id:id,type:type,summary:summary,payload:payload,by:{id:V.id,name:V.name,role:V.role},status:'pending',ts:Date.now()});
+  if(ok){log('approval_requested',type,summary);toast('Sent to the Super Admin for approval')}
+  return ok;
+}
+async function adjustStock(o,dir){
+  for(var i=0;i<(o.items||[]).length;i++){
+    var it=o.items[i],p=byId(it.id);
+    if(p&&typeof p.stock==='number')await wDoc('products',p.id,{stock:Math.max(0,p.stock+dir*it.qty)},{merge:true});
+  }
+}
+async function applyBulk(pct,cat){
+  var list=prods().filter(function(p){return cat==='all'||p.cat===cat});
+  for(var i=0;i<list.length;i++){
+    var p=list[i],np=Math.max(1,Math.round(p.price*(1+pct/100)));
+    await wDoc('products',p.id,{price:np,mrp:Math.max(p.mrp||0,np)},{merge:true});
+  }
+  return list.length;
+}
+async function applyApproval(ap){
+  var p=ap.payload||{};
+  if(ap.type==='deleteProduct')await wDel('products',p.pid);
+  else if(ap.type==='bulkPrice')await applyBulk(p.pct,p.cat);
+  else if(ap.type==='discount')await wDoc('products',p.pid,p.patch,{merge:true});
+  else if(ap.type==='refund'){var o=S.D.orders[p.oid];if(o)await wItem('orders',{id:p.oid,refund:p.amount,refundNote:p.note||''},o.uid)}
+}
+async function decide(id,ok,note){
+  var ap=S.D.approvals[id];if(!ap||ap.status!=='pending')return;
+  if(ok)await applyApproval(ap);
+  await wDoc('approvals',id,{status:ok?'approved':'rejected',note:note||'',decidedAt:Date.now()},{merge:true});
+  log(ok?'approval_approved':'approval_rejected',ap.type,ap.summary+(note?' · '+note:''));
+  toast(ok?'Approved and applied':'Rejected');
+}
+
+/* ================= dashboards: shared UI helpers ================= */
+function head(t,sub,act){return '<div class="dh"><div><h1>'+esc(t)+'</h1>'+(sub?'<p>'+sub+'</p>':'')+'</div>'+(act?'<div class="acts">'+act+'</div>':'')+'</div>'}
+function tb(headers,rows,empty){
+  if(!rows.length)return '<div class="empty-s">'+esc(empty||'Nothing here yet.')+'</div>';
+  return '<div class="tbl-wrap"><table><thead><tr>'+headers.map(function(h){return '<th scope="col">'+h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
+}
+function noAccess(){return '<div class="empty-s">Your role does not include this section.</div>'}
+function stPill(s){
+  if(s<0)return '<span class="pill p-bad">Cancelled</span>';
+  return '<span class="pill '+['p-warn','p-info','p-info','p-info','p-ok'][s]+'">'+['Placed','Confirmed','Packed','Out for delivery','Delivered'][s]+'</span>';
+}
+function chipsQ(mod,key,opts,cur){
+  return '<div class="chips" role="group">'+opts.map(function(o){return '<button class="chip" data-d="setq" data-v="'+mod+'.'+key+'='+esc(o[0])+'" aria-pressed="'+(String(cur)===String(o[0]))+'">'+esc(o[1])+'</button>'}).join('')+'</div>';
+}
+function openDM(html,size){
+  $('#dm-body').innerHTML='<div class="dm">'+html+'</div>';
+  $('#lay-dm .panel').className='panel'+(size?' '+size:'');
+  openLayer('lay-dm');
+}
+function confirmDM(title,body,lbl,d,id,danger){
+  openDM('<h2>'+esc(title)+'</h2><p style="margin-top:10px">'+body+'</p><div class="acts" style="margin-top:18px"><button class="btn '+(danger?'btn-bad':'btn-primary')+'" data-d="'+d+'" data-id="'+esc(id)+'">'+esc(lbl)+'</button><button class="btn btn-ghost" data-act="close">Keep it as it is</button></div>');
+}
+function csvCell(c){c=String(c==null?'':c);if(/^[=+\-@]/.test(c))c="'"+c;return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}
+async function downloadCsv(name,rows){
+  if(!S.dl){toast('Downloads are not available in this view.');return false}
+  try{await S.dl.save({filename:name,data:rows.map(function(r){return r.map(csvCell).join(',')}).join('\n')});return true}
+  catch(e){if(!e||e.code!=='declined')toast('The file could not be saved.');return false}
+}
+function reportCounts(){var m={};vals(S.D.reviews).forEach(function(r){if(r.kind==='report')m[r.rid]=(m[r.rid]||0)+1});return m}
+function reportedReviews(){var m=reportCounts();return vals(S.D.reviews).filter(function(r){return r.kind==='review'&&r.status==='visible'&&m[r.id]})}
+function customersList(){
+  var m={};
+  vals(S.D.orders).forEach(function(o){
+    var c=o.customer||{},k=c.email||o.uid||o.id;
+    var x=m[k]||(m[k]={email:c.email||'',name:c.student||'',cls:c.cls||'',board:c.board||'',guardian:(o.guardian||{}).name||'',phone:(o.guardian||{}).phone||'',orders:0,total:0,last:0});
+    x.orders++;if(o.status>=0)x.total+=o.total;x.last=Math.max(x.last,o.ts);
+  });
+  return vals(m).sort(function(a,b){return b.last-a.last});
+}
+
+/* ================= dashboards: shell ================= */
+var HEX='<svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="var(--honey)"/><path d="M8 13h16M8 17.5h16M8 22h16" stroke="#0F1B3F" stroke-width="2.5" stroke-linecap="round"/></svg>';
+function pendingApprovals(){return vals(S.D.approvals).filter(function(a){return a.status==='pending'})}
+function dtop(V){
+  var sup=S.route==='super',h='<header class="dtop"><div class="dwrap dtop-in"><a class="dbrand" href="#shop">'+HEX+'ProjectBee<span class="role-badge">'+(sup?'Super Admin':'Admin')+'</span></a><div class="dtop-r">';
+  if(V&&!sup&&superAllowed()){
+    h+='<label class="sr" for="actas">Act as</label><select id="actas" data-actas="1"><option value="super"'+(S.actAs==='super'?' selected':'')+'>Acting as Super Admin</option>'+vals(S.D.admins).filter(function(a){return a.status==='active'}).map(function(a){return '<option value="'+esc(a.id)+'"'+(S.actAs===a.id?' selected':'')+'>Acting as '+esc(a.name)+'</option>'}).join('')+'</select>';
+  }
+  if(V&&sup){var n=pendingApprovals().length;h+='<button class="icon-btn bell" data-d="goto" data-v="approvals" aria-label="Approvals waiting: '+n+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>'+(n?'<span class="count">'+n+'</span>':'')+'</button>'}
+  h+='<a class="btn btn-ghost" href="#shop">View shop</a>';
+  if(V&&!sup){h+=superAllowed()?'<a class="btn btn-ghost" href="#super-admin">Super Admin</a>':'<button class="btn btn-ghost" data-d="alogout">Log out</button>'}
+  return h+'</div></div></header>';
+}
+function navFor(V){
+  if(S.route==='super')return [['Operations','overview','Overview'],['','orders','Orders'],['','products','Products'],['','reviews','Reviews'],['','questions','Questions'],['','customers','Customers'],['Business','reports','Reports'],['','approvals','Approvals'],['Control','admins','Admins and staff'],['','roles','Roles and permissions'],['','settings','Settings'],['System','audit','Audit log'],['','backup','Backup and recovery']];
+  var n=[['Workspace','overview','Overview']];
+  if(can(V,'orders.view'))n.push(['','orders','Orders']);
+  if(can(V,'products.view'))n.push(['','products','Products']);
+  if(can(V,'reviews.view'))n.push(['','reviews','Reviews']);
+  if(can(V,'questions.answer'))n.push(['','questions','Questions']);
+  if(can(V,'customers.view'))n.push(['','customers','Customers']);
+  if(can(V,'reports.view'))n.push(['','reports','Reports']);
+  n.push(['','requests','My requests']);
+  return n;
+}
+function navCount(id){
+  if(id==='approvals')return pendingApprovals().length;
+  if(id==='orders')return vals(S.D.orders).filter(function(o){return o.status===0}).length;
+  if(id==='reviews')return reportedReviews().length;
+  if(id==='questions')return vals(S.D.questions).filter(function(q){return !q.answer}).length;
+  return 0;
+}
+function navHtml(nav,view){
+  return nav.map(function(n){
+    var c=navCount(n[1]);
+    return (n[0]?'<div class="grp">'+n[0]+'</div>':'')+'<button data-d="goto" data-v="'+n[1]+'"'+(n[1]===view?' aria-current="page"':'')+'><span>'+n[2]+'</span>'+(c?'<span class="n">'+c+'</span>':'')+'</button>';
+  }).join('');
+}
+function gate(){
+  if(S.mode==='loading')return '<div class="gate dcard"><h1>Loading</h1><p class="muted">Connecting to the shared data.</p></div>';
+  if(S.route==='super')return '<div class="gate dcard"><h1>Super Admin</h1><p class="muted">This area opens only for the ProjectBee owner account. Open this page while signed in to Claude with that account.</p><a class="btn btn-ghost" href="#shop">Back to the shop</a></div>';
+  if(superAllowed()){
+    var act=vals(S.D.admins).filter(function(a){return a.status==='active'});
+    return '<div class="gate dcard"><h1>Choose who to act as</h1><p class="muted">You can open the Admin workspace as any active Admin, or as yourself. Actions are recorded under that name, so you can test roles and approvals before real staff start.</p>'+
+      '<form data-form="actas" novalidate><div class="field"><label for="ga-who">Act as</label><select id="ga-who"><option value="super">Super Admin (all permissions)</option>'+act.map(function(a){return '<option value="'+esc(a.id)+'">'+esc(a.name)+' · '+esc((S.D.roles[a.roleId]||{}).name||'No role')+'</option>'}).join('')+'</select></div>'+
+      (act.length?'':'<p class="hint">No Admin has been activated yet. Add one under Admins and staff in the Super Admin area.</p>')+
+      '<button class="btn btn-primary" type="submit">Open Admin workspace</button></form></div>';
+  }
+  var st=S.adminLogin;
+  if(st.step===1)return '<div class="gate dcard"><h1>Admin login</h1><p class="muted">Enter the email address your Super Admin invited. We send a one-time code.</p><form data-form="alogin1" novalidate><div class="field"><label for="al-email">Email address</label><input id="al-email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" value="'+esc(st.email)+'"><p class="err" id="al-email-e" aria-live="polite"></p></div><button class="btn btn-primary" type="submit">Send code</button></form></div>';
+  var needInv=st.rec&&st.rec.status==='invited'&&st.rec.method==='link';
+  return '<div class="gate dcard"><h1>Enter your code</h1><p class="muted">We sent a code to '+esc(st.email)+'.</p><form data-form="alogin2" novalidate><div class="demo">Preview mode: no email is sent. Enter any 6 digits.</div><div class="field"><label for="al-code">6-digit code</label><input id="al-code" class="otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······"><p class="err" id="al-code-e" aria-live="polite"></p></div>'+
+    (needInv?'<div class="field"><label for="al-inv">Invitation code</label><input id="al-inv" autocomplete="off" placeholder="8 characters"><p class="err" id="al-inv-e" aria-live="polite"></p></div>':'')+
+    '<button class="btn btn-primary" type="submit">Verify and continue</button><button class="btn-link" type="button" data-d="alogin-back">Use a different email</button></form></div>';
+}
+var MOD={};
+function renderDash(){
+  var root=$('#dash-root'),ae=document.activeElement,fid=ae&&ae.id&&ae.closest&&ae.closest('#dash-root')?ae.id:'',ss=null;
+  try{ss=ae.selectionStart}catch(e){}
+  var V=curV(),html;
+  if(!V)html=dtop(null)+'<div class="dwrap">'+gate()+'</div>';
+  else{
+    var nav=navFor(V),view=S.view[S.route];
+    if(!nav.some(function(n){return n[1]===view}))view=nav[0][1];
+    S.view[S.route]=view;
+    html=dtop(V)+'<div class="dwrap"><div class="dash"><nav class="dnav" aria-label="Sections">'+navHtml(nav,view)+'</nav><section class="dmain" id="dash-main" tabindex="-1">'+MOD[view](V)+'</section></div></div>';
+  }
+  root.innerHTML=html;
+  if(fid){var el=document.getElementById(fid);if(el){el.focus();try{if(ss!=null)el.setSelectionRange(ss,ss)}catch(e){}}}
+}
+
+/* ================= module: overview ================= */
+MOD.overview=function(V){
+  var orders=vals(S.D.orders),live=orders.filter(function(o){return o.status>=0});
+  var pend=orders.filter(function(o){return o.status===0}).length;
+  var rev=live.reduce(function(s,o){return s+o.total},0);
+  var low=prods().filter(function(p){return stockOf(p)<=cfg().lowStock});
+  var attn=[],sup=S.route==='super';
+  if(sup&&pendingApprovals().length)attn.push(['warn','approvals',pendingApprovals().length+' approval'+(pendingApprovals().length>1?'s':'')+' waiting for you']);
+  if(pend&&can(V,'orders.view'))attn.push(['warn','orders',pend+' new order'+(pend>1?'s':'')+' to confirm']);
+  if(reportedReviews().length&&can(V,'reviews.view'))attn.push(['bad','reviews',reportedReviews().length+' reported review'+(reportedReviews().length>1?'s':'')+' to check']);
+  var qn=navCount('questions');if(qn&&can(V,'questions.answer'))attn.push(['warn','questions',qn+' unanswered question'+(qn>1?'s':'')]);
+  if(low.length&&can(V,'products.view'))attn.push(['bad','products',low.length+' project'+(low.length>1?'s':'')+' low or out of stock']);
+  var h=head('Overview',sup?'Everything across ProjectBee at a glance.':'Your work for today, based on your role.');
+  if(sup&&!prods().length)h+='<div class="dcard"><h2>Set up your shop</h2><p class="muted">The catalogue is empty. Load the 12 starter projects and five starter roles, then edit them to match your real stock and prices.</p><div><button class="btn btn-primary" data-d="seed">Load starter catalogue and roles</button></div></div>';
+  h+='<div class="dcard"><h2>Needs attention</h2>'+(attn.length?'<div class="attn">'+attn.map(function(a){return '<button data-d="goto" data-v="'+a[1]+'"><span class="sev '+(a[0]==='bad'?'bad':'')+'"></span><span class="t">'+esc(a[2])+'</span><span aria-hidden="true">›</span></button>'}).join('')+'</div>':'<div class="attn"><button data-d="noop"><span class="sev ok"></span><span class="t">Nothing needs your attention right now.</span></button></div>')+'</div>';
+  if(can(V,'orders.view')){
+    h+='<div class="kpis"><div class="kpi"><span>Orders</span><strong>'+orders.length+'</strong></div><div class="kpi"><span>Revenue (excl. cancelled)</span><strong>'+inr(rev)+'</strong></div><div class="kpi"><span>Awaiting confirmation</span><strong>'+pend+'</strong></div><div class="kpi"><span>Delivered</span><strong>'+orders.filter(function(o){return o.status===4}).length+'</strong></div>'+(sup?'<div class="kpi"><span>Active admins</span><strong>'+vals(S.D.admins).filter(function(a){return a.status==='active'}).length+'</strong></div>':'')+'</div>';
+    var rec=orders.slice().sort(function(a,b){return b.ts-a.ts}).slice(0,5);
+    h+='<div class="dcard"><h2>Recent orders</h2>'+tb(['Order','Placed','Student','Total','Status'],rec.map(function(o){return ['<button class="row-btn" data-d="order" data-id="'+esc(o.id)+'">'+esc(o.id)+'</button>',fd(o.ts),esc((o.customer||{}).student||''),'<span class="num">'+inr(o.total)+'</span>',stPill(o.status)]}),'No orders yet. Place one from the shop to see it here.')+'</div>';
+  }
+  if(can(V,'products.view')&&low.length){
+    h+='<div class="dcard"><h2>Low or out of stock</h2>'+tb(['Project','Stock'],low.slice(0,6).map(function(p){return [esc(p.name),stockOf(p)<=0?'<span class="pill p-bad">Out of stock</span>':'<span class="pill p-warn">'+stockOf(p)+' left</span>']}))+'</div>';
+  }
+  return h;
+};
+
+/* ================= module: orders ================= */
+MOD.orders=function(V){
+  if(!can(V,'orders.view'))return noAccess();
+  var q=S.q.orders,all=vals(S.D.orders).sort(function(a,b){return b.ts-a.ts}),cnt={all:all.length};
+  all.forEach(function(o){cnt[o.status]=(cnt[o.status]||0)+1});
+  var list=all.filter(function(o){return (q.st==='all'||String(o.status)===q.st)&&(!q.t||(o.id+' '+((o.customer||{}).student||'')).toLowerCase().indexOf(q.t.toLowerCase())>=0)});
+  var opts=[['all','All ('+cnt.all+')'],['0','Placed ('+(cnt[0]||0)+')'],['1','Confirmed ('+(cnt[1]||0)+')'],['2','Packed ('+(cnt[2]||0)+')'],['3','Out for delivery ('+(cnt[3]||0)+')'],['4','Delivered ('+(cnt[4]||0)+')'],['-1','Cancelled ('+(cnt['-1']||0)+')']];
+  return head('Orders','All orders are cash on delivery. Contact details are masked until you open them.')+
+    '<div class="filters-row">'+chipsQ('orders','st',opts,q.st)+'<label class="sr" for="oq">Search orders</label><input id="oq" type="search" data-q="orders.t" placeholder="Search order or student" value="'+esc(q.t)+'"></div>'+
+    tb(['Order','Placed','Student','Contact','Items','Total','Status',''],list.map(function(o){
+      var c=o.customer||{},g=o.guardian||{};
+      return ['<button class="row-btn" data-d="order" data-id="'+esc(o.id)+'">'+esc(o.id)+'</button>',fd(o.ts),esc(c.student||'')+(c.cls?' · Class '+esc(c.cls):''),esc(mphone(g.phone)),(o.items||[]).reduce(function(s,i){return s+i.qty},0),'<span class="num">'+inr(o.total)+'</span>',stPill(o.status),'<button class="btn btn-ghost sm" data-d="order" data-id="'+esc(o.id)+'">Open</button>'];
+    }),'No orders match. New orders from the shop appear here.');
+};
+function openOrder(id){
+  var V=curV(),o=S.D.orders[id];if(!V||!o)return;
+  var full=!!S.reveal[id]&&can(V,'orders.fullcontact'),c=o.customer||{},g=o.guardian||{},a=o.addr||{};
+  var h='<h2>'+esc(o.id)+' '+stPill(o.status)+'</h2><p class="muted">Placed '+fd(o.ts)+' · Cash on delivery · Collect '+inr(o.total)+'</p>';
+  h+='<div class="sec"><h3>Customer</h3><dl class="kv"><dt>Student</dt><dd>'+esc(c.student||'')+(c.cls?', Class '+esc(c.cls):'')+(c.board?' · '+esc(c.board):'')+'</dd><dt>Account email</dt><dd>'+esc(full?c.email:memail(c.email))+'</dd><dt>Guardian</dt><dd>'+esc(g.name||'')+'</dd><dt>Guardian mobile</dt><dd>'+esc(full?g.phone:mphone(g.phone))+'</dd><dt>WhatsApp (verified)</dt><dd>'+esc(full?o.wa:mphone(o.wa))+'</dd><dt>Address</dt><dd>'+(full?esc([a.line,a.area,a.city,a.pin].filter(Boolean).join(', ')):'Hidden · '+esc(a.city||'')+' '+esc(String(a.pin||'').slice(0,3))+'XXX')+'</dd></dl>'+
+    (!full&&can(V,'orders.fullcontact')?'<div><button class="btn btn-ghost sm" data-d="reveal" data-id="'+esc(o.id)+'">Show full details</button> <span class="hint">This view is recorded in the audit log.</span></div>':'')+'</div>';
+  h+='<div class="sec"><h3>Items</h3>'+tb(['Project','Qty','Price'],(o.items||[]).map(function(i){return [esc(i.name),i.qty,'<span class="num">'+inr(i.price*i.qty)+'</span>']}))+'<p class="muted">Subtotal '+inr(o.sub)+' · Delivery '+(o.del?inr(o.del):'Free')+' · <strong>Total '+inr(o.total)+'</strong>'+(o.refund?' · Refunded '+inr(o.refund):'')+'</p></div>';
+  h+='<div class="sec"><h3>Progress</h3><ol class="track">'+STATUS.map(function(s,i){return '<li class="'+(o.status>=0&&i<o.status?'done':i===o.status?'now':'')+'">'+s+'</li>'}).join('')+'</ol></div>';
+  if(can(V,'orders.update')&&o.status>=0&&o.status<4){
+    h+='<div class="sec"><div class="acts"><button class="btn btn-primary" data-d="advance" data-id="'+esc(o.id)+'">'+NEXT[o.status]+'</button><button class="btn btn-ghost" data-d="cancel-ask" data-id="'+esc(o.id)+'">Cancel order</button></div>'+(o.status===1?'<p class="hint">Stock is reduced when the order is marked as packed.</p>':'')+'</div>';
+  }
+  if(can(V,'orders.refund')&&(o.status===4||o.status<0)){
+    h+='<div class="sec"><h3>Record a refund</h3><form data-form="refund" novalidate><input type="hidden" id="rf-id" value="'+esc(o.id)+'"><div class="fgrid"><div class="field"><label for="rf-amt">Amount (₹)</label><input id="rf-amt" inputmode="numeric" value="'+(o.refund||'')+'"><p class="err" id="rf-amt-e" aria-live="polite"></p></div><div class="field"><label for="rf-note">Reason</label><input id="rf-note" placeholder="e.g. Damaged on arrival"></div></div><div><button class="btn btn-ghost" type="submit">Record refund</button></div></form></div>';
+  }
+  openDM(h,'lg');
+}
+async function setStatus(id,st){
+  var V=curV(),o=S.D.orders[id];if(!V||!o||!can(V,'orders.update'))return;
+  var prev=o.status;
+  var ok=await wItem('orders',{id:id,status:st,log:(o.log||[]).concat([{ts:Date.now(),st:st,by:V.name}])},o.uid);
+  if(!ok)return;
+  if(st===2&&prev<2)await adjustStock(o,-1);
+  if(st===-1&&prev>=2)await adjustStock(o,1);
+  log('order_status',id,label(prev)+' → '+label(st));
+  toast(st<0?'Order cancelled':'Order updated');
+  openOrder(id);
+}
+
+/* ================= module: products ================= */
+MOD.products=function(V){
+  if(!can(V,'products.view'))return noAccess();
+  var q=S.q.products,list=prods().filter(function(p){return (q.cat==='all'||p.cat===q.cat)&&(!q.t||(p.name+' '+p.subject).toLowerCase().indexOf(q.t.toLowerCase())>=0)}).sort(function(a,b){return a.name<b.name?-1:1});
+  var act='';
+  if(can(V,'products.bulkprice'))act+='<button class="btn btn-ghost" data-d="bulk">Change prices in bulk</button>';
+  if(can(V,'products.edit'))act+='<button class="btn btn-primary" data-d="padd">Add project</button>';
+  var h=head('Products','Set prices, stock and visibility. Hidden projects do not show in the shop.',act);
+  h+='<div class="filters-row"><label class="sr" for="pq">Search projects</label><input id="pq" type="search" data-q="products.t" placeholder="Search projects" value="'+esc(q.t)+'"><label class="sr" for="pc">Category</label><select id="pc" data-qs="products.cat"><option value="all">All categories</option>'+CATS.map(function(c){return '<option'+(q.cat===c?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div>';
+  h+=tb(['Project','Class','Price','Stock','Status',''],list.map(function(p){
+    var st=stockOf(p);
+    return ['<div class="pcell"><div class="thumb-s">'+artSvg(p)+'</div><div><strong>'+esc(p.name)+'</strong><div class="meta">'+esc(p.cat)+'</div></div></div>',p.classes[0]+'–'+p.classes[1],'<span class="num">'+inr(p.price)+'</span>',
+      can(V,'inventory.edit')?'<div class="stk"><label class="sr" for="st-'+esc(p.id)+'">Stock for '+esc(p.name)+'</label><input id="st-'+esc(p.id)+'" inputmode="numeric" value="'+(typeof p.stock==='number'?p.stock:'')+'"><button class="btn btn-ghost sm" data-d="stock" data-id="'+esc(p.id)+'">Save</button></div>':(st<=0?'<span class="pill p-bad">Out of stock</span>':st<=cfg().lowStock?'<span class="pill p-warn">'+st+' left</span>':String(st)),
+      p.status==='hidden'?'<span class="pill p-mute">Hidden</span>':'<span class="pill p-ok">Live</span>',
+      '<div class="acts">'+(can(V,'products.edit')?'<button class="btn btn-ghost sm" data-d="pedit" data-id="'+esc(p.id)+'">Edit</button><button class="btn btn-ghost sm" data-d="ptoggle" data-id="'+esc(p.id)+'">'+(p.status==='hidden'?'Show':'Hide')+'</button>':'')+(can(V,'products.delete')?'<button class="btn btn-ghost sm" data-d="pdel" data-id="'+esc(p.id)+'">Delete</button>':'')+'</div>'];
+  }),'No projects yet.');
+  return h;
+};
+function productForm(p){
+  var n=!p;p=p||{name:'',cat:CATS[0],subject:SUBJECTS[0],classes:[1,12],boards:BOTH.slice(),price:'',mrp:'',stock:10,days:'3 to 5 days',size:'',blurb:'',includes:[],art:'solar',video:false,status:'active'};
+  var cls=function(sel){var s='';for(var i=1;i<=12;i++)s+='<option value="'+i+'"'+(i===sel?' selected':'')+'>Class '+i+'</option>';return s};
+  return '<h2>'+(n?'Add a project':'Edit project')+'</h2><form data-form="product" novalidate><input type="hidden" id="pf-id" value="'+esc(n?'':p.id)+'">'+
+   '<div class="fgrid"><div class="field full"><label for="pf-name">Project name</label><input id="pf-name" value="'+esc(p.name)+'"><p class="err" id="pf-name-e" aria-live="polite"></p></div>'+
+   '<div class="field"><label for="pf-cat">Category</label><select id="pf-cat">'+CATS.map(function(c){return '<option'+(c===p.cat?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div>'+
+   '<div class="field"><label for="pf-subject">Subject</label><select id="pf-subject">'+SUBJECTS.map(function(c){return '<option'+(c===p.subject?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div>'+
+   '<div class="field"><label for="pf-c1">From class</label><select id="pf-c1">'+cls(p.classes[0])+'</select></div><div class="field"><label for="pf-c2">To class</label><select id="pf-c2">'+cls(p.classes[1])+'</select><p class="err" id="pf-c2-e" aria-live="polite"></p></div>'+
+   '<div class="field full"><span class="lbl">Boards</span><div class="checks"><label><input type="checkbox" id="pf-b1"'+(p.boards.indexOf('CBSE')>=0?' checked':'')+'>CBSE</label><label><input type="checkbox" id="pf-b2"'+(p.boards.indexOf('ICSE')>=0?' checked':'')+'>ICSE</label></div><p class="err" id="pf-b1-e" aria-live="polite"></p></div>'+
+   '<div class="field"><label for="pf-price">Selling price (₹)</label><input id="pf-price" inputmode="numeric" value="'+esc(p.price)+'"><p class="err" id="pf-price-e" aria-live="polite"></p></div>'+
+   '<div class="field"><label for="pf-mrp">Original price (₹)</label><input id="pf-mrp" inputmode="numeric" value="'+esc(p.mrp)+'"><p class="err" id="pf-mrp-e" aria-live="polite"></p></div>'+
+   '<div class="field"><label for="pf-stock">Stock</label><input id="pf-stock" inputmode="numeric" value="'+esc(p.stock)+'"><p class="err" id="pf-stock-e" aria-live="polite"></p></div>'+
+   '<div class="field"><label for="pf-days">Delivery time</label><input id="pf-days" value="'+esc(p.days)+'"></div>'+
+   '<div class="field"><label for="pf-size">Finished size</label><input id="pf-size" value="'+esc(p.size)+'"></div>'+
+   '<div class="field"><label for="pf-art">Picture</label><select id="pf-art">'+Object.keys(ART).map(function(k){return '<option value="'+k+'"'+(k===p.art?' selected':'')+'>'+ART_NAMES[k]+'</option>'}).join('')+'</select></div>'+
+   '<div class="field full"><label for="pf-blurb">Short description</label><textarea id="pf-blurb">'+esc(p.blurb)+'</textarea></div>'+
+   '<div class="field full"><label for="pf-inc">What is in the box (one item per line)</label><textarea id="pf-inc">'+esc((p.includes||[]).join('\n'))+'</textarea></div>'+
+   '<div class="field full"><div class="checks"><label><input type="checkbox" id="pf-video"'+(p.video?' checked':'')+'>Has a demo video</label><label><input type="checkbox" id="pf-live"'+(p.status!=='hidden'?' checked':'')+'>Show in the shop</label></div></div></div>'+
+   '<div class="acts"><button class="btn btn-primary" type="submit">'+(n?'Add project':'Save changes')+'</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>';
+}
+
+/* ================= module: reviews ================= */
+MOD.reviews=function(V){
+  if(!can(V,'reviews.view'))return noAccess();
+  var f=S.q.reviews.f,rc=reportCounts(),all=vals(S.D.reviews).filter(function(r){return r.kind==='review'});
+  var list=all.filter(function(r){if(f==='reported')return r.status==='visible'&&rc[r.id];if(f==='hidden')return r.status==='hidden';if(f==='deleted')return r.status==='deleted';return r.status!=='deleted'}).sort(function(a,b){return b.ts-a.ts});
+  var opts=[['all','All'],['reported','Reported ('+reportedReviews().length+')'],['hidden','Hidden']];if(V.isSuper)opts.push(['deleted','Deleted']);
+  var h=head('Reviews','Only verified buyers can write reviews. A review is never hidden just because it is negative.')+'<div class="filters-row">'+chipsQ('reviews','f',opts,f)+'</div>';
+  h+=list.length?'<div class="dcard">'+list.map(function(r){
+    var p=byId(r.pid),st=r.status==='hidden'?'<span class="pill p-mute">Hidden: '+esc(r.hiddenReason||'')+'</span>':r.status==='deleted'?'<span class="pill p-bad">Deleted</span>':'<span class="pill p-ok">Visible</span>';
+    return '<div class="ap"><div class="acts"><span class="stars" role="img" aria-label="'+r.stars+' out of 5">'+starsTxt(r.stars)+'</span><strong>'+esc(r.name)+(r.cls?', Class '+esc(r.cls):'')+'</strong>'+st+(rc[r.id]?'<span class="pill p-warn">'+rc[r.id]+' report'+(rc[r.id]>1?'s':'')+'</span>':'')+'</div><p class="meta">'+esc(p?p.name:r.pid)+' · '+fd(r.ts)+'</p><p>'+esc(r.text)+'</p><div class="acts">'+
+      (r.status==='visible'&&can(V,'reviews.hide')?'<button class="btn btn-ghost sm" data-d="rvhide" data-id="'+esc(r.id)+'">Hide</button>':'')+
+      (V.isSuper&&r.status==='hidden'?'<button class="btn btn-ghost sm" data-d="rvrestore" data-id="'+esc(r.id)+'">Restore</button>':'')+
+      (V.isSuper&&r.status!=='deleted'?'<button class="btn btn-ghost sm" data-d="rvdelete" data-id="'+esc(r.id)+'">Delete permanently</button>':'')+'</div></div>';
+  }).join('')+'</div>':'<div class="empty-s">No reviews here. Reviews appear after a verified buyer receives a project.</div>';
+  return h;
+};
+
+/* ================= module: questions ================= */
+MOD.questions=function(V){
+  if(!can(V,'questions.answer'))return noAccess();
+  var list=vals(S.D.questions).sort(function(a,b){return (a.answer?1:0)-(b.answer?1:0)||b.ts-a.ts});
+  return head('Questions','Answers appear on the project page for every customer.')+(list.length?'<div class="dcard">'+list.map(function(q){
+    var p=byId(q.pid);
+    return '<div class="ap"><p class="meta">'+esc(p?p.name:q.pid)+' · '+esc(q.name||'Customer')+' · '+fd(q.ts)+'</p><p><strong>'+esc(q.text)+'</strong></p>'+(q.answer?'<p class="qa-a">'+esc(q.answer)+'</p><p class="hint">Answered by '+esc(q.answeredBy||'')+'</p>':'<div class="field"><label for="ans-'+esc(q.id)+'">Your answer</label><textarea id="ans-'+esc(q.id)+'"></textarea></div><div><button class="btn btn-primary sm" data-d="answer" data-id="'+esc(q.id)+'">Post answer</button></div>')+'</div>';
+  }).join('')+'</div>':'<div class="empty-s">No questions yet.</div>');
+};
+
+/* ================= module: customers ================= */
+MOD.customers=function(V){
+  if(!can(V,'customers.view'))return noAccess();
+  var q=S.q.customers.t.toLowerCase(),list=customersList().filter(function(c){return !q||(c.name+' '+c.guardian).toLowerCase().indexOf(q)>=0});
+  var act=(V.isSuper||can(V,'customers.export'))?'<button class="btn btn-ghost" data-d="cexport">Export customer data</button>':'';
+  return head('Customers','Built from orders. Phone numbers and emails are masked.',act)+'<div class="filters-row"><label class="sr" for="cq">Search customers</label><input id="cq" type="search" data-q="customers.t" placeholder="Search student or guardian" value="'+esc(S.q.customers.t)+'"></div>'+
+    tb(['Student','Class','Guardian','Mobile','Email','Orders','Spent','Last order'],list.map(function(c){return [esc(c.name),c.cls?'Class '+esc(c.cls):'',esc(c.guardian),esc(mphone(c.phone)),esc(memail(c.email)),c.orders,'<span class="num">'+inr(c.total)+'</span>',fd(c.last)]}),'No customers yet. They appear after the first order.');
+};
+function customerRows(){return [['Student','Class','Board','Email','Guardian','Mobile','Orders','Spent','Last order']].concat(customersList().map(function(c){return [c.name,c.cls,c.board,c.email,c.guardian,c.phone,c.orders,c.total,new Date(c.last).toISOString().slice(0,10)]}))}
+
+/* ================= module: reports ================= */
+MOD.reports=function(V){
+  if(!can(V,'reports.view'))return noAccess();
+  var orders=vals(S.D.orders),live=orders.filter(function(o){return o.status>=0}),rev=live.reduce(function(s,o){return s+o.total},0);
+  var byCat={},byCls={},byBoard={};
+  live.forEach(function(o){
+    (o.items||[]).forEach(function(i){var p=byId(i.id),k=p?p.cat:'Other';byCat[k]=(byCat[k]||0)+i.price*i.qty});
+    var c=o.customer||{};var kc=c.cls?'Class '+c.cls:'Not given';byCls[kc]=(byCls[kc]||0)+o.total;var kb=c.board||'Not given';byBoard[kb]=(byBoard[kb]||0)+o.total;
+  });
+  function hbar(m){
+    var keys=Object.keys(m).sort(function(a,b){return m[b]-m[a]}),mx=Math.max.apply(null,[1].concat(keys.map(function(k){return m[k]})));
+    return keys.length?'<div class="hbar">'+keys.map(function(k){return '<div><span>'+esc(k)+'</span><i style="width:'+Math.max(2,Math.round(m[k]/mx*100))+'%"></i><b>'+inr(m[k])+'</b></div>'}).join('')+'</div>':'<div class="empty-s">No sales yet.</div>';
+  }
+  var days=[],now=new Date();now.setHours(0,0,0,0);
+  for(var i=13;i>=0;i--){var d=new Date(now.getTime()-i*864e5);days.push({t:d.getTime(),n:0})}
+  orders.forEach(function(o){var d=new Date(o.ts);d.setHours(0,0,0,0);var s=days.find(function(x){return x.t===d.getTime()});if(s)s.n++});
+  var mx=Math.max(1,Math.max.apply(null,days.map(function(d){return d.n}))),bw=560/14,svg='<svg class="chart" viewBox="0 0 560 170" role="img" aria-label="Orders per day for the last 14 days"><line class="ax" x1="0" y1="140" x2="560" y2="140"/><text x="0" y="12">'+mx+'</text>';
+  days.forEach(function(d,i){var hh=Math.round(d.n/mx*110);svg+='<rect class="bar" x="'+(i*bw+6)+'" y="'+(140-hh)+'" width="'+(bw-12)+'" height="'+hh+'" rx="3"/>'+(i%2===0?'<text x="'+(i*bw+bw/2)+'" y="160" text-anchor="middle">'+new Date(d.t).getDate()+'</text>':'')});
+  svg+='</svg>';
+  return head('Reports','Sales exclude cancelled orders.','<button class="btn btn-ghost" data-d="rexport">Export orders (CSV)</button>')+
+   '<div class="kpis"><div class="kpi"><span>Orders</span><strong>'+orders.length+'</strong></div><div class="kpi"><span>Revenue</span><strong>'+inr(rev)+'</strong></div><div class="kpi"><span>Average order</span><strong>'+inr(live.length?Math.round(rev/live.length):0)+'</strong></div><div class="kpi"><span>Cancelled</span><strong>'+(orders.length?Math.round((orders.length-live.length)/orders.length*100):0)+'%</strong></div></div>'+
+   '<div class="dcard"><h2>Orders per day, last 14 days</h2>'+svg+'</div>'+
+   '<div class="dcard"><h2>Revenue by category</h2>'+hbar(byCat)+'</div><div class="dcard"><h2>Revenue by class</h2>'+hbar(byCls)+'</div><div class="dcard"><h2>Revenue by board</h2>'+hbar(byBoard)+'</div>';
+};
+
+/* ================= module: approvals ================= */
+function apDetail(a){
+  var p=a.payload||{};
+  if(a.type==='deleteProduct')return '<dl class="diff"><dt>Delete</dt><dd>'+esc(p.name||p.pid)+'</dd></dl>';
+  if(a.type==='bulkPrice')return '<dl class="diff"><dt>Change</dt><dd>'+(p.pct>0?'+':'')+esc(p.pct)+'% on '+esc(p.cat==='all'?'all projects':p.cat)+' ('+esc(p.count)+' projects)</dd></dl>';
+  if(a.type==='discount'){var cur=byId(p.pid)||{};return '<dl class="diff"><dt>Project</dt><dd>'+esc(p.name)+'</dd><dt>Price</dt><dd><span class="old">'+inr(cur.price)+'</span>'+inr((p.patch||{}).price)+'</dd><dt>Discount</dt><dd>'+esc(p.pct)+'% off</dd></dl>'}
+  if(a.type==='refund')return '<dl class="diff"><dt>Order</dt><dd>'+esc(p.oid)+'</dd><dt>Refund</dt><dd>'+inr(p.amount)+'</dd><dt>Reason</dt><dd>'+esc(p.note||'')+'</dd></dl>';
+  if(a.type==='exportCustomers')return '<p class="muted">Customer data export, including full contact details.</p>';
+  return '';
+}
+var AP_NAMES={deleteProduct:'Delete a project',bulkPrice:'Bulk price change',discount:'Large discount',refund:'Large refund',exportCustomers:'Customer data export'};
+function apStatus(a){return a.status==='pending'?'<span class="pill p-warn">Waiting</span>':a.status==='approved'?'<span class="pill p-ok">Approved</span>':'<span class="pill p-bad">Rejected</span>'}
+MOD.approvals=function(V){
+  if(!V.isSuper)return noAccess();
+  var all=vals(S.D.approvals).sort(function(a,b){return b.ts-a.ts}),pend=all.filter(function(a){return a.status==='pending'}),done=all.filter(function(a){return a.status!=='pending'});
+  var h=head('Approvals','Actions that your approval rules hold until you decide.');
+  h+='<div class="dcard"><h2>Waiting for you</h2>'+(pend.length?pend.map(function(a){
+    return '<div class="ap"><div class="acts"><strong>'+esc(AP_NAMES[a.type]||a.type)+'</strong>'+apStatus(a)+'</div><p class="meta">Requested by '+esc(a.by.name)+' ('+esc(a.by.role)+') · '+fd(a.ts)+'</p>'+apDetail(a)+'<div class="field"><label for="apn-'+esc(a.id)+'">Note (optional)</label><input id="apn-'+esc(a.id)+'"></div><div class="acts"><button class="btn btn-primary sm" data-d="apok" data-id="'+esc(a.id)+'">Approve</button><button class="btn btn-ghost sm" data-d="apno" data-id="'+esc(a.id)+'">Reject</button></div></div>';
+  }).join(''):'<div class="empty-s">Nothing is waiting. Requests from Admins appear here.</div>')+'</div>';
+  h+='<div class="dcard"><h2>Decided</h2>'+tb(['Request','By','Decision','Note','When'],done.slice(0,30).map(function(a){return [esc(AP_NAMES[a.type]||a.type)+'<div class="meta">'+esc(a.summary)+'</div>',esc(a.by.name),apStatus(a),esc(a.note||''),fd(a.decidedAt||a.ts)]}),'No decisions yet.')+'</div>';
+  return h;
+};
+MOD.requests=function(V){
+  var mine=vals(S.D.approvals).filter(function(a){return a.by&&a.by.id===V.id}).sort(function(a,b){return b.ts-a.ts});
+  return head('My requests','Actions that needed the Super Admin\'s approval.')+tb(['Request','Status','Note','When',''],mine.map(function(a){
+    return [esc(AP_NAMES[a.type]||a.type)+'<div class="meta">'+esc(a.summary)+'</div>',apStatus(a),esc(a.note||''),fd(a.ts),(a.type==='exportCustomers'&&a.status==='approved'&&!a.used)?'<button class="btn btn-primary sm" data-d="apdl" data-id="'+esc(a.id)+'">Download file</button>':''];
+  }),'You have not sent any requests.');
+};
+
+/* ================= module: admins ================= */
+function permChecks(sel){
+  var groups={},h='';
+  PERMS.forEach(function(p){(groups[p[0]]=groups[p[0]]||[]).push(p)});
+  Object.keys(groups).forEach(function(g){
+    h+='<div class="groupT">'+esc(g)+'</div><div class="checks">'+groups[g].map(function(p){return '<label><input type="checkbox" name="perm" value="'+p[1]+'"'+(sel.has(p[1])?' checked':'')+'><span>'+esc(p[2])+(p[3]?' <span class="sens">Sensitive</span>':'')+'</span></label>'}).join('')+'</div>';
+  });
+  return h;
+}
+function checkedPerms(){return [].slice.call(document.querySelectorAll('#dm-body input[name=perm]:checked')).map(function(i){return i.value})}
+MOD.admins=function(V){
+  if(!V.isSuper)return noAccess();
+  var list=vals(S.D.admins).sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
+  var h=head('Admins and staff','Only you can add Admins, change roles or switch access on and off.','<button class="btn btn-primary" data-d="aadd">Add admin</button>');
+  h+=tb(['Name','Email','Role','Status',''],list.map(function(a){
+    var st=a.status==='active'?'<span class="pill p-ok">Active</span>':a.status==='invited'?'<span class="pill p-info">Invited</span>':'<span class="pill p-bad">Suspended</span>';
+    return [esc(a.name),esc(a.email),esc((S.D.roles[a.roleId]||{}).name||'No role'),st,'<div class="acts"><button class="btn btn-ghost sm" data-d="aedit" data-id="'+esc(a.id)+'">Edit</button>'+(a.status==='suspended'?'<button class="btn btn-ghost sm" data-d="areact" data-id="'+esc(a.id)+'">Reactivate</button>':'<button class="btn btn-ghost sm" data-d="asusp" data-id="'+esc(a.id)+'">Suspend</button>')+(a.status==='invited'?'<button class="btn btn-ghost sm" data-d="ainv" data-id="'+esc(a.id)+'">New invitation</button>':'<button class="btn btn-ghost sm" data-d="arevoke" data-id="'+esc(a.id)+'">Sign out everywhere</button>')+'</div>'];
+  }),'No Admins yet. Add the first one to start sharing the work.');
+  return h;
+};
+function adminAddForm(){
+  var roles=vals(S.D.roles);
+  return '<h2>Add an admin</h2><form data-form="aadd" novalidate><div class="fgrid"><div class="field"><label for="aa-name">Name</label><input id="aa-name" autocomplete="off"><p class="err" id="aa-name-e" aria-live="polite"></p></div><div class="field"><label for="aa-email">Email address</label><input id="aa-email" type="email" autocomplete="off"><p class="err" id="aa-email-e" aria-live="polite"></p></div>'+
+   '<div class="field full"><label for="aa-role">Role</label><select id="aa-role">'+roles.map(function(r){return '<option value="'+esc(r.id)+'">'+esc(r.name)+'</option>'}).join('')+'</select><p class="err" id="aa-role-e" aria-live="polite"></p></div>'+
+   '<div class="field full"><span class="lbl">How should they join?</span><div class="checks"><label><input type="radio" name="aa-m" value="manual" checked><span>Invite by email. They activate with an email code.</span></label><label><input type="radio" name="aa-m" value="link"><span>Invitation link and code. You share them yourself. The code works once and expires in 48 hours.</span></label></div></div></div><div class="acts"><button class="btn btn-primary" type="submit">Create invitation</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>';
+}
+function pageLink(){return location.href.split('#')[0]+'#admin'}
+function copyBox(v){return '<div class="copy-box"><code>'+esc(v)+'</code><button class="btn btn-ghost sm" type="button" data-d="copy" data-v="'+esc(v)+'">Copy</button></div>'}
+function inviteResult(a,inv){
+  return '<h2>Invitation ready</h2><p class="muted" style="margin-top:8px">Preview mode: no email is sent. Send these details to '+esc(a.name)+' yourself.</p><div class="sec"><h3>Admin login page</h3>'+copyBox(pageLink())+'<p class="hint">They enter '+esc(a.email)+' and the email code'+(inv?', then the invitation code':'')+'.</p></div>'+(inv?'<div class="sec"><h3>Invitation code</h3>'+copyBox(inv.code)+'<p class="hint">Works once. Expires '+esc(fd(inv.exp))+'.</p></div>':'')+'<div class="acts" style="margin-top:16px"><button class="btn btn-primary" data-act="close">Done</button></div>';
+}
+async function makeInvite(a){
+  var code='';var al='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';for(var i=0;i<8;i++)code+=al.charAt(Math.floor(Math.random()*al.length));
+  var inv={id:rid('iv'),adminId:a.id,code:code,exp:Date.now()+48*36e5,used:false};
+  await wDoc('invites',inv.id,inv);return inv;
+}
+function adminEditForm(a){
+  var set=permsOf(a),roles=vals(S.D.roles);
+  return '<h2>'+esc(a.name)+'</h2><p class="muted">'+esc(a.email)+'</p><form data-form="aedit" novalidate><input type="hidden" id="ae-id" value="'+esc(a.id)+'"><div class="field"><label for="ae-role">Role</label><select id="ae-role">'+roles.map(function(r){return '<option value="'+esc(r.id)+'"'+(r.id===a.roleId?' selected':'')+'>'+esc(r.name)+'</option>'}).join('')+'</select></div><div class="sec"><h3>Permissions for this admin</h3><p class="hint">Starts from the role. Tick or untick to give this person more or less. Sensitive permissions are off unless you turn them on.</p>'+permChecks(set)+'</div><div class="acts"><button class="btn btn-primary" type="submit">Save changes</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>';
+}
+
+/* ================= module: roles ================= */
+MOD.roles=function(V){
+  if(!V.isSuper)return noAccess();
+  var list=vals(S.D.roles),used={};vals(S.D.admins).forEach(function(a){used[a.roleId]=(used[a.roleId]||0)+1});
+  return head('Roles and permissions','Start from a ready-made role, then add or remove permissions. No developer needed.','<button class="btn btn-primary" data-d="radd">New role</button>')+
+   (list.length?'<div class="dcard">'+list.map(function(r){
+    return '<div class="ap"><div class="acts"><strong>'+esc(r.name)+'</strong>'+(r.preset?'<span class="pill p-mute">Starter role</span>':'<span class="pill p-info">Custom</span>')+'<span class="hint">'+(used[r.id]||0)+' admin'+((used[r.id]||0)===1?'':'s')+'</span></div><div class="chips">'+(r.perms||[]).map(function(k){var pp=PERMS.find(function(x){return x[1]===k});return '<span class="tag-s">'+esc(pp?pp[2]:k)+'</span>'}).join('')+'</div><div class="acts"><button class="btn btn-ghost sm" data-d="redit" data-id="'+esc(r.id)+'">Edit</button>'+(used[r.id]?'':'<button class="btn btn-ghost sm" data-d="rdel" data-id="'+esc(r.id)+'">Delete</button>')+'</div></div>';
+   }).join('')+'</div>':'<div class="empty-s">No roles yet. Load the starter roles from the Overview, or create one.</div>');
+};
+function roleForm(r){
+  var n=!r;r=r||{name:'',perms:[]};
+  return '<h2>'+(n?'New role':'Edit role')+'</h2><form data-form="role" novalidate><input type="hidden" id="ro-id" value="'+esc(n?'':r.id)+'"><div class="field"><label for="ro-name">Role name</label><input id="ro-name" value="'+esc(r.name)+'"><p class="err" id="ro-name-e" aria-live="polite"></p></div><div class="sec"><h3>Permissions</h3><p class="hint">No role can ever give Super Admin powers.</p>'+permChecks(new Set(r.perms))+'</div><div class="acts"><button class="btn btn-primary" type="submit">'+(n?'Create role':'Save role')+'</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>';
+}
+
+/* ================= module: settings ================= */
+function chk(id,on,lbl){return '<label><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+lbl+'</span></label>'}
+MOD.settings=function(V){
+  if(!V.isSuper)return noAccess();
+  var c=cfg(),m=c.maintenance,a=c.approvals;
+  var ret=m.returnAt?String(m.returnAt).slice(0,16):'';
+  return head('Settings','Changes are saved together and recorded in the audit log.')+
+  '<form class="dmain" data-form="settings" novalidate>'+
+  '<div class="dcard"><h2>Maintenance mode</h2><div class="checks">'+chk('st-m-on',m.on,'Pause login, cart and checkout. Customers can still browse.')+'</div><div class="fgrid"><div class="field full"><label for="st-m-msg">Message shown to customers</label><textarea id="st-m-msg">'+esc(m.message)+'</textarea></div><div class="field"><label for="st-m-ret">Expected back (optional)</label><input id="st-m-ret" type="datetime-local" value="'+esc(ret)+'"></div></div></div>'+
+  '<div class="dcard"><h2>Checkout and delivery</h2><div class="checks">'+chk('st-cod',c.cod.enabled,'Cash on delivery is available')+'</div><div class="fgrid"><div class="field"><label for="st-min">Minimum order (₹)</label><input id="st-min" inputmode="numeric" value="'+c.cod.minOrder+'"></div><div class="field"><label for="st-fee">Delivery fee (₹)</label><input id="st-fee" inputmode="numeric" value="'+c.delivery.fee+'"></div><div class="field"><label for="st-free">Free delivery above (₹)</label><input id="st-free" inputmode="numeric" value="'+c.delivery.freeAbove+'"></div></div><p class="err" id="st-num-e" aria-live="polite"></p></div>'+
+  '<div class="dcard"><h2>Approval rules</h2><p class="muted">Admins need your approval for these actions. You can always act directly.</p><div class="checks">'+chk('st-a-bulk',a.bulkPrice,'Bulk price changes')+chk('st-a-del',a.deleteProduct,'Deleting projects')+chk('st-a-exp',a.exportCustomers,'Customer data exports')+chk('st-a-disc',a.discount.on,'Discounts above the limit below')+chk('st-a-ref',a.refund.on,'Refunds above the limit below')+'</div><div class="fgrid"><div class="field"><label for="st-a-discpct">Discount limit (% off)</label><input id="st-a-discpct" inputmode="numeric" value="'+a.discount.pct+'"></div><div class="field"><label for="st-a-refamt">Refund limit (₹)</label><input id="st-a-refamt" inputmode="numeric" value="'+a.refund.amount+'"></div></div></div>'+
+  '<div class="dcard"><h2>Alerts</h2><div class="checks">'+chk('st-al-ap',c.alerts.approvals,'Approval requests')+chk('st-al-sec',c.alerts.security,'Security events')+chk('st-al-low',c.alerts.lowStock,'Low stock')+chk('st-al-del',c.alerts.delivery,'Message delivery problems')+'</div><p class="note-s">Alerts show in the dashboard now. Email alerts start once the Supabase backend is connected.</p></div>'+
+  '<div class="dcard"><h2>Records</h2><div class="fgrid"><div class="field"><label for="st-ret">Keep audit log for</label><select id="st-ret"><option value="90"'+(c.retentionDays===90?' selected':'')+'>90 days</option><option value="365"'+(c.retentionDays===365?' selected':'')+'>1 year</option><option value="0"'+(c.retentionDays===0?' selected':'')+'>Forever</option></select></div><div class="field"><label for="st-low">Low-stock warning at (units)</label><input id="st-low" inputmode="numeric" value="'+c.lowStock+'"></div></div></div>'+
+  '<div><button class="btn btn-primary" type="submit">Save settings</button></div></form>';
+};
+
+/* ================= module: audit ================= */
+var pruned=false;
+async function pruneAudit(){
+  if(pruned||S.mode==='loading')return;pruned=true;
+  var d=cfg().retentionDays;if(!d)return;
+  var cut=Date.now()-d*864e5,old=vals(S.D.audit).filter(function(a){return a.ts<cut}).slice(0,50);
+  for(var i=0;i<old.length;i++)await wDel('audit',old[i].id);
+}
+MOD.audit=function(V){
+  if(!V.isSuper)return noAccess();
+  pruneAudit();
+  var q=S.q.audit,all=vals(S.D.audit).sort(function(a,b){return b.ts-a.ts}),acts={};
+  all.forEach(function(a){acts[a.action]=1});
+  var list=all.filter(function(a){return (q.a==='all'||a.action===q.a)&&(!q.t||(a.actor+' '+a.target+' '+a.detail).toLowerCase().indexOf(q.t.toLowerCase())>=0)});
+  var c=cfg().retentionDays;
+  return head('Audit log','Who did what, and when. Nobody can edit or delete entries. Kept '+(c?(c===365?'for 1 year':'for '+c+' days'):'forever')+'.','<button class="btn btn-ghost" data-d="aexport">Export (CSV)</button>')+
+   '<div class="filters-row"><label class="sr" for="aq">Search the log</label><input id="aq" type="search" data-q="audit.t" placeholder="Search who, what or where" value="'+esc(q.t)+'"><label class="sr" for="aa">Action</label><select id="aa" data-qs="audit.a"><option value="all">All actions</option>'+Object.keys(acts).sort().map(function(k){return '<option value="'+esc(k)+'"'+(q.a===k?' selected':'')+'>'+esc(k.replace(/_/g,' '))+'</option>'}).join('')+'</select></div>'+
+   tb(['When','Who','Action','Target','Detail'],list.slice(0,200).map(function(a){return [fd(a.ts),esc(a.actor)+(a.role&&a.role!==a.actor?'<div class="meta">'+esc(a.role)+'</div>':''),esc(String(a.action).replace(/_/g,' ')),esc(a.target),esc(a.detail)]}),'No entries yet. Every change made in the dashboards is recorded here.');
+};
+
+/* ================= module: backup ================= */
+MOD.backup=function(V){
+  if(!V.isSuper)return noAccess();
+  var reqs=vals(S.D.audit).filter(function(a){return a.action==='restore_requested'}).sort(function(a,b){return b.ts-a.ts});
+  return head('Backup and recovery','Restores are never one click. Request one here, then finish it in Supabase.')+
+   '<div class="dcard"><h2>Backup status</h2><div class="empty-s">Backup status is not connected yet. It appears here once ProjectBee runs on your Supabase project.</div></div>'+
+   '<div class="dcard"><h2>Request a restore</h2><form data-form="restore" novalidate><div class="field"><label for="rs-why">What went wrong?</label><textarea id="rs-why"></textarea><p class="err" id="rs-why-e" aria-live="polite"></p></div><div class="field"><label for="rs-ok">Type RESTORE to confirm</label><input id="rs-ok" autocomplete="off"><p class="err" id="rs-ok-e" aria-live="polite"></p></div><div><button class="btn btn-bad" type="submit">Record restore request</button></div></form>'+
+   '<h3>Then, in Supabase</h3><ol class="ul-check" style="list-style:decimal;padding-left:20px"><li>Open the project, then Database, then Backups.</li><li>Pick the backup from before the problem.</li><li>Restore it, and note that orders placed after that time are lost.</li><li>Come back and record the outcome in the audit log.</li></ol></div>'+
+   '<div class="dcard"><h2>Past requests</h2>'+tb(['When','Detail'],reqs.map(function(a){return [fd(a.ts),esc(a.detail)]}),'No restore requests.')+'</div>';
+};
+
+/* ================= dashboard click actions ================= */
+var DA={};
+DA.noop=function(){};
+DA.goto=function(el){S.view[S.route]=el.getAttribute('data-v');renderDash();window.scrollTo(0,0)};
+DA.setq=function(el){var kv=el.getAttribute('data-v').split('='),p=kv[0].split('.');S.q[p[0]][p[1]]=kv.slice(1).join('=');renderDash()};
+DA.copy=function(el){var v=el.getAttribute('data-v');try{navigator.clipboard.writeText(v).then(function(){toast('Copied')},function(){toast('Select the text and copy it')})}catch(e){toast('Select the text and copy it')}};
+DA.seed=async function(){
+  toast('Loading starter data');
+  for(var i=0;i<STARTER.length;i++)await wDoc('products',STARTER[i].id,JSON.parse(JSON.stringify(STARTER[i])));
+  for(var j=0;j<STARTER_ROLES.length;j++)await wDoc('roles',STARTER_ROLES[j].id,JSON.parse(JSON.stringify(STARTER_ROLES[j])));
+  log('setup','catalogue','Loaded starter catalogue and roles');toast('Starter catalogue and roles loaded');
+};
+DA.order=function(el){openOrder(el.getAttribute('data-id'))};
+DA.reveal=function(el){var id=el.getAttribute('data-id');S.reveal[id]=true;log('customer_data_viewed',id,'Full contact details opened');openOrder(id)};
+DA.advance=function(el){var o=S.D.orders[el.getAttribute('data-id')];if(o)setStatus(o.id,o.status+1)};
+DA['cancel-ask']=function(el){confirmDM('Cancel this order?','The customer will see it as cancelled. If it was already packed, the stock goes back.','Cancel order','cancel-do',el.getAttribute('data-id'),true)};
+DA['cancel-do']=function(el){setStatus(el.getAttribute('data-id'),-1)};
+DA.stock=async function(el){
+  var id=el.getAttribute('data-id'),inp=document.getElementById('st-'+id),n=parseInt(inp.value,10);
+  if(isNaN(n)||n<0){toast('Enter a stock number, 0 or more.');return}
+  var p=byId(id),old=p.stock;if(await wDoc('products',id,{stock:n},{merge:true})){log('stock_updated',p.name,old+' → '+n);toast('Stock saved')}
+};
+DA.padd=function(){openDM(productForm(null),'lg')};
+DA.pedit=function(el){openDM(productForm(byId(el.getAttribute('data-id'))),'lg')};
+DA.ptoggle=async function(el){
+  var p=byId(el.getAttribute('data-id')),ns=p.status==='hidden'?'active':'hidden';
+  if(await wDoc('products',p.id,{status:ns},{merge:true})){log(ns==='hidden'?'product_hidden':'product_shown',p.name,'');toast(ns==='hidden'?'Hidden from the shop':'Now showing in the shop')}
+};
+DA.pdel=function(el){var p=byId(el.getAttribute('data-id'));confirmDM('Delete '+p.name+'?','This removes the project from the catalogue for good. Hiding it keeps it for later.','Delete project','pdel-do',p.id,true)};
+DA['pdel-do']=async function(el){
+  var V=curV(),p=byId(el.getAttribute('data-id'));if(!V||!p)return;
+  closeLayer('lay-dm');
+  if(needsApproval(V,'deleteProduct')){await requestApproval(V,'deleteProduct','Delete '+p.name,{pid:p.id,name:p.name});return}
+  if(await wDel('products',p.id)){log('product_deleted',p.name,'');toast('Project deleted')}
+};
+DA.bulk=function(){
+  openDM('<h2>Change prices in bulk</h2><form data-form="bulk" novalidate><div class="fgrid"><div class="field"><label for="bp-cat">Applies to</label><select id="bp-cat"><option value="all">All projects</option>'+CATS.map(function(c){return '<option>'+esc(c)+'</option>'}).join('')+'</select></div><div class="field"><label for="bp-pct">Change by (%)</label><input id="bp-pct" inputmode="numeric" placeholder="e.g. 10 or -5"><p class="err" id="bp-pct-e" aria-live="polite"></p></div></div><p class="hint">Use a minus sign to lower prices. Between -50 and 50.</p><div class="acts"><button class="btn btn-primary" type="submit">Apply</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>');
+};
+DA.rvhide=function(el){
+  openDM('<h2>Hide this review</h2><form data-form="rvhide" novalidate><input type="hidden" id="rh-id" value="'+esc(el.getAttribute('data-id'))+'"><div class="field"><label for="rh-why">Reason</label><select id="rh-why">'+REASONS.map(function(r){return '<option>'+r+'</option>'}).join('')+'</select></div><p class="hint">A review cannot be hidden only because it is negative.</p><div class="acts"><button class="btn btn-primary" type="submit">Hide review</button><button class="btn btn-ghost" type="button" data-act="close">Cancel</button></div></form>');
+};
+async function setReview(id,patch,act,detail){
+  var r=S.D.reviews[id];if(!r)return;
+  if(await wItem('reviews',Object.assign({id:id},patch),r.uid)){log(act,id,detail||'');toast('Done')}
+}
+DA.rvrestore=function(el){setReview(el.getAttribute('data-id'),{status:'visible',hiddenReason:''},'review_restored','')};
+DA.rvdelete=function(el){confirmDM('Delete this review permanently?','It will no longer appear anywhere, and the customer cannot post another review for this project.','Delete review','rvdelete-do',el.getAttribute('data-id'),true)};
+DA['rvdelete-do']=function(el){closeLayer('lay-dm');setReview(el.getAttribute('data-id'),{status:'deleted'},'review_deleted','')};
+DA.answer=async function(el){
+  var V=curV(),id=el.getAttribute('data-id'),q=S.D.questions[id],t=document.getElementById('ans-'+id).value.trim();
+  if(!t){toast('Write an answer first.');return}
+  if(await wItem('questions',{id:id,answer:t,answeredBy:V.name,answeredAt:Date.now()},q.uid)){log('question_answered',id,'');toast('Answer posted')}
+};
+DA.cexport=async function(){
+  var V=curV();
+  if(needsApproval(V,'exportCustomers')){await requestApproval(V,'exportCustomers','Export customer data ('+customersList().length+' customers)',{});return}
+  if(await downloadCsv('projectbee-customers.csv',customerRows()))log('customer_data_exported','customers',customersList().length+' customers');
+};
+DA.apdl=async function(el){
+  var ap=S.D.approvals[el.getAttribute('data-id')];
+  if(await downloadCsv('projectbee-customers.csv',customerRows())){await wDoc('approvals',ap.id,{used:true},{merge:true});log('customer_data_exported','customers','Approved export downloaded')}
+};
+DA.rexport=async function(){
+  var rows=[['Order','Placed','Status','Class','Board','City','Items','Total']].concat(vals(S.D.orders).sort(function(a,b){return b.ts-a.ts}).map(function(o){var c=o.customer||{};return [o.id,new Date(o.ts).toISOString().slice(0,16).replace('T',' '),label(o.status),c.cls||'',c.board||'',(o.addr||{}).city||'',(o.items||[]).reduce(function(s,i){return s+i.qty},0),o.total]}));
+  if(await downloadCsv('projectbee-orders.csv',rows))log('report_exported','orders',rows.length-1+' orders');
+};
+DA.aexport=async function(){
+  var rows=[['When','Who','Role','Action','Target','Detail']].concat(vals(S.D.audit).sort(function(a,b){return b.ts-a.ts}).map(function(a){return [new Date(a.ts).toISOString(),a.actor,a.role,a.action,a.target,a.detail]}));
+  await downloadCsv('projectbee-audit-log.csv',rows);
+};
+DA.apok=function(el){var id=el.getAttribute('data-id'),n=document.getElementById('apn-'+id);decide(id,true,n?n.value.trim():'')};
+DA.apno=function(el){var id=el.getAttribute('data-id'),n=document.getElementById('apn-'+id);decide(id,false,n?n.value.trim():'')};
+DA.aadd=function(){if(!vals(S.D.roles).length){toast('Create a role first.');return}openDM(adminAddForm())};
+DA.aedit=function(el){openDM(adminEditForm(S.D.admins[el.getAttribute('data-id')]),'lg')};
+DA.asusp=async function(el){var a=S.D.admins[el.getAttribute('data-id')];if(await wDoc('admins',a.id,{status:'suspended',rev:(a.rev||0)+1},{merge:true})){log('admin_suspended',a.name,'');toast('Suspended')}};
+DA.areact=async function(el){var a=S.D.admins[el.getAttribute('data-id')];if(await wDoc('admins',a.id,{status:a.activatedAt?'active':'invited'},{merge:true})){log('admin_reactivated',a.name,'');toast('Reactivated')}};
+DA.arevoke=async function(el){var a=S.D.admins[el.getAttribute('data-id')];if(await wDoc('admins',a.id,{rev:(a.rev||0)+1},{merge:true})){log('sessions_revoked',a.name,'');toast('Signed out everywhere')}};
+DA.ainv=async function(el){var a=S.D.admins[el.getAttribute('data-id')],inv=await makeInvite(a);await wDoc('admins',a.id,{method:'link'},{merge:true});log('invitation_created',a.name,'New invitation code');openDM(inviteResult(a,inv))};
+DA.radd=function(){openDM(roleForm(null),'lg')};
+DA.redit=function(el){openDM(roleForm(S.D.roles[el.getAttribute('data-id')]),'lg')};
+DA.rdel=function(el){var r=S.D.roles[el.getAttribute('data-id')];confirmDM('Delete the '+r.name+' role?','No admin uses it. You can create it again later.','Delete role','rdel-do',r.id,true)};
+DA['rdel-do']=async function(el){var r=S.D.roles[el.getAttribute('data-id')];closeLayer('lay-dm');if(await wDel('roles',r.id)){log('role_deleted',r.name,'');toast('Role deleted')}};
+DA.alogout=function(){S.session=null;store.set('pb2.session',null);S.adminLogin={step:1,email:'',rec:null};renderDash()};
+DA['alogin-back']=function(){S.adminLogin={step:1,email:'',rec:null};renderDash()};
+
+/* ================= forms ================= */
+var FORMS={};
+FORMS.actas=function(){S.actAs=$('#ga-who').value;store.set('pb2.actAs',S.actAs);S.view.admin='overview';renderDash()};
+FORMS.alogin1=function(){
+  var em=$('#al-email').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){setErr('al-email','Enter a valid email address.');return}
+  var rec=vals(S.D.admins).find(function(a){return String(a.email).toLowerCase()===em});
+  if(!rec){setErr('al-email','This email has not been invited. Ask the Super Admin to add you, and to give you Editor access to this page.');return}
+  if(rec.status==='suspended'){setErr('al-email','This account is suspended. Contact the Super Admin.');return}
+  S.adminLogin={step:2,email:em,rec:rec};renderDash();
+};
+FORMS.alogin2=async function(){
+  var st=S.adminLogin,rec=st.rec;
+  if(!/^\d{6}$/.test($('#al-code').value.trim())){setErr('al-code','Enter the 6-digit code.');return}
+  setErr('al-code','');
+  if(rec.status==='invited'){
+    var inv=null;
+    if(rec.method==='link'){
+      var code=$('#al-inv').value.trim().toUpperCase();
+      inv=vals(S.D.invites).find(function(i){return i.adminId===rec.id&&!i.used&&i.exp>Date.now()&&i.code===code});
+      if(!inv){setErr('al-inv','This invitation code is wrong, already used or expired. Ask for a new one.');return}
+    }
+    var ok=await wDoc('admins',rec.id,{status:'active',uid:S.uid||'',activatedAt:Date.now()},{merge:true});
+    if(!ok)return;
+    if(inv)await wDoc('invites',inv.id,{used:true},{merge:true});
+    log('admin_activated',rec.name,'');
+  }
+  S.session={id:rec.id,rev:rec.rev||0};store.set('pb2.session',S.session);S.adminLogin={step:1,email:'',rec:null};renderDash();
+};
+FORMS.product=async function(){
+  var V=curV(),v=function(i){return $('#'+i).value.trim()},bad=false;
+  function er(id,m){setErr(id,m);bad=true}
+  ['pf-name','pf-c2','pf-b1','pf-price','pf-mrp','pf-stock'].forEach(function(i){setErr(i,'')});
+  if(v('pf-name').length<3)er('pf-name','Enter the project name.');
+  var c1=+v('pf-c1'),c2=+v('pf-c2');if(c1>c2)er('pf-c2','This must be the same as or after the first class.');
+  var boards=[];if($('#pf-b1').checked)boards.push('CBSE');if($('#pf-b2').checked)boards.push('ICSE');if(!boards.length)er('pf-b1','Choose at least one board.');
+  var price=parseInt(v('pf-price'),10),mrp=parseInt(v('pf-mrp'),10),stock=parseInt(v('pf-stock'),10);
+  if(isNaN(price)||price<1)er('pf-price','Enter a price in rupees.');
+  if(isNaN(mrp)||mrp<price)er('pf-mrp','The original price cannot be lower than the selling price.');
+  if(isNaN(stock)||stock<0)er('pf-stock','Enter stock, 0 or more.');
+  if(bad)return;
+  var id=v('pf-id')||rid('p'),isNew=!v('pf-id');
+  var patch={id:id,name:v('pf-name'),cat:$('#pf-cat').value,subject:$('#pf-subject').value,classes:[c1,c2],boards:boards,price:price,mrp:mrp,stock:stock,days:v('pf-days')||'3 to 5 days',size:v('pf-size'),blurb:v('pf-blurb'),includes:$('#pf-inc').value.split('\n').map(function(x){return x.trim()}).filter(Boolean),art:$('#pf-art').value,video:$('#pf-video').checked,status:$('#pf-live').checked?'active':'hidden'};
+  var pct=Math.round((1-price/mrp)*100);
+  closeLayer('lay-dm');
+  if(needsApproval(V,'discount',{pct:pct})){await requestApproval(V,'discount',(isNew?'Add ':'Update ')+patch.name+' at '+pct+'% off',{pid:id,name:patch.name,patch:patch,pct:pct});return}
+  if(await wDoc('products',id,patch,{merge:true})){log(isNew?'product_added':'product_updated',patch.name,inr(price));toast(isNew?'Project added':'Project saved')}
+};
+FORMS.bulk=async function(){
+  var V=curV(),pct=parseInt($('#bp-pct').value,10),cat=$('#bp-cat').value;
+  if(isNaN(pct)||pct===0||pct<-50||pct>50){setErr('bp-pct','Enter a change between -50 and 50.');return}
+  var count=prods().filter(function(p){return cat==='all'||p.cat===cat}).length;
+  closeLayer('lay-dm');
+  if(needsApproval(V,'bulkPrice')){await requestApproval(V,'bulkPrice',(pct>0?'+':'')+pct+'% on '+(cat==='all'?'all projects':cat),{pct:pct,cat:cat,count:count});return}
+  var n=await applyBulk(pct,cat);log('bulk_price_change',cat==='all'?'All projects':cat,(pct>0?'+':'')+pct+'% on '+n+' projects');toast('Prices updated');
+};
+FORMS.refund=async function(){
+  var V=curV(),id=$('#rf-id').value,amt=parseInt($('#rf-amt').value,10),o=S.D.orders[id];
+  if(isNaN(amt)||amt<1||amt>o.total){setErr('rf-amt','Enter an amount up to '+inr(o.total)+'.');return}
+  var note=$('#rf-note').value.trim();
+  if(needsApproval(V,'refund',{amount:amt})){closeLayer('lay-dm');await requestApproval(V,'refund','Refund '+inr(amt)+' on '+id,{oid:id,amount:amt,note:note});return}
+  if(await wItem('orders',{id:id,refund:amt,refundNote:note},o.uid)){log('refund_recorded',id,inr(amt)+(note?' · '+note:''));toast('Refund recorded');openOrder(id)}
+};
+FORMS.rvhide=function(){var id=$('#rh-id').value,why=$('#rh-why').value,V=curV();closeLayer('lay-dm');setReview(id,{status:'hidden',hiddenReason:why,hiddenBy:V.name,hiddenAt:Date.now()},'review_hidden',why)};
+FORMS.aadd=async function(){
+  var nm=$('#aa-name').value.trim(),em=$('#aa-email').value.trim().toLowerCase(),role=$('#aa-role').value,m=document.querySelector('#dm-body input[name=aa-m]:checked').value;
+  setErr('aa-name','');setErr('aa-email','');
+  if(nm.length<2){setErr('aa-name','Enter their name.');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){setErr('aa-email','Enter a valid email address.');return}
+  if(vals(S.D.admins).some(function(a){return String(a.email).toLowerCase()===em})){setErr('aa-email','This email already has an admin account.');return}
+  var a={id:rid('ad'),name:nm,email:em,roleId:role,extra:[],removed:[],status:'invited',method:m,rev:0,createdAt:Date.now()};
+  if(!(await wDoc('admins',a.id,a)))return;
+  var inv=m==='link'?await makeInvite(a):null;
+  log('admin_invited',nm,(S.D.roles[role]||{}).name+' · '+m);
+  openDM(inviteResult(a,inv));
+};
+FORMS.aedit=async function(){
+  var id=$('#ae-id').value,a=S.D.admins[id],roleId=$('#ae-role').value,r=S.D.roles[roleId]||{perms:[]},sel=checkedPerms(),base=r.perms||[];
+  var extra=sel.filter(function(p){return base.indexOf(p)<0}),removed=base.filter(function(p){return sel.indexOf(p)<0});
+  closeLayer('lay-dm');
+  if(await wDoc('admins',id,{roleId:roleId,extra:extra,removed:removed,rev:(a.rev||0)+((a.roleId!==roleId)?1:0)},{merge:true})){log('permissions_changed',a.name,r.name+(extra.length?' · +'+extra.length:'')+(removed.length?' · -'+removed.length:''));toast('Saved')}
+};
+FORMS.role=async function(){
+  var nm=$('#ro-name').value.trim(),id=$('#ro-id').value;
+  if(nm.length<2){setErr('ro-name','Enter a role name.');return}
+  var perms=checkedPerms(),isNew=!id;id=id||rid('r');
+  closeLayer('lay-dm');
+  if(await wDoc('roles',id,{id:id,name:nm,perms:perms,preset:!isNew&&!!(S.D.roles[id]||{}).preset},{merge:true})){log(isNew?'role_created':'role_updated',nm,perms.length+' permissions');toast('Role saved')}
+};
+FORMS.settings=async function(){
+  var n=function(i){return parseInt($('#'+i).value,10)},o=cfg(),bad=false;
+  var nums=['st-min','st-fee','st-free','st-a-discpct','st-a-refamt','st-low'];
+  nums.forEach(function(i){var v=n(i);if(isNaN(v)||v<0)bad=true});
+  if(bad){setErr('st-num','Enter whole numbers, 0 or more, in every money and limit field.');return}
+  setErr('st-num','');
+  var ret=$('#st-m-ret').value;
+  var ns={maintenance:{on:$('#st-m-on').checked,message:$('#st-m-msg').value.trim()||DEFAULTS.maintenance.message,returnAt:ret},
+    cod:{enabled:$('#st-cod').checked,minOrder:n('st-min')},delivery:{fee:n('st-fee'),freeAbove:n('st-free')},
+    approvals:{bulkPrice:$('#st-a-bulk').checked,deleteProduct:$('#st-a-del').checked,exportCustomers:$('#st-a-exp').checked,discount:{on:$('#st-a-disc').checked,pct:n('st-a-discpct')},refund:{on:$('#st-a-ref').checked,amount:n('st-a-refamt')}},
+    alerts:{approvals:$('#st-al-ap').checked,security:$('#st-al-sec').checked,lowStock:$('#st-al-low').checked,delivery:$('#st-al-del').checked},
+    retentionDays:parseInt($('#st-ret').value,10),lowStock:n('st-low')};
+  var changed=Object.keys(ns).filter(function(k){return JSON.stringify(ns[k])!==JSON.stringify(o[k])});
+  if(!changed.length){toast('No changes to save');return}
+  if(await wSettings(ns)){if(ns.maintenance.on!==o.maintenance.on)log(ns.maintenance.on?'maintenance_on':'maintenance_off','site','');log('settings_changed','settings',changed.join(', '));toast('Settings saved')}
+};
+FORMS.restore=function(){
+  var why=$('#rs-why').value.trim();
+  if(why.length<5){setErr('rs-why','Describe what went wrong.');return}
+  if($('#rs-ok').value.trim()!=='RESTORE'){setErr('rs-ok','Type RESTORE exactly to confirm.');return}
+  log('restore_requested','database',why);$('#rs-why').value='';$('#rs-ok').value='';toast('Restore request recorded');
+};
+
+/* ================= shop forms (login, review, question, checkout) ================= */
+document.addEventListener('submit',async function(e){
+  var f=e.target,k=f.getAttribute&&f.getAttribute('data-form');
+  if(k&&FORMS[k]){e.preventDefault();try{await FORMS[k](f)}catch(x){toast('Something went wrong. Try again.')}return}
+  if(f.id==='lg-form1'){
+    e.preventDefault();var v=$('#lg-email').value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){setErr('lg-email','Enter a valid email address, like name@example.com.');return}
+    setErr('lg-email','');S.email=v.toLowerCase();$('#lg-sent').textContent='We sent a code to '+S.email+'. It expires in 10 minutes.';
+    $('#lg-code').value='';setErr('lg-code','');showPane('lg-p2');startCountdown();
+  }else if(f.id==='lg-form2'){
+    e.preventDefault();
+    if(!/^\d{6}$/.test($('#lg-code').value.trim())){setErr('lg-code','Enter the 6-digit code.');return}
+    setErr('lg-code','');var pr=store.get('pb2.profiles',{}),prev=pr[S.email];
+    S.user=prev?prev:{email:S.email,name:'',cls:'',board:''};
+    if(prev){finishLogin();return}showPane('lg-p3');
+  }else if(f.id==='lg-form3'){
+    e.preventDefault();var name=$('#lg-name').value.trim();
+    if(!name){setErr('lg-name','Enter a first name, or choose Skip for now.');return}
+    setErr('lg-name','');S.user.name=name;S.user.cls=$('#lg-class').value;S.user.board=$('#lg-board').value;
+    var p2=store.get('pb2.profiles',{});p2[S.user.email]=S.user;store.set('pb2.profiles',p2);finishLogin();
+  }else if(f.id==='rv-form'){
+    e.preventDefault();var t=$('#rv-text').value.trim();
+    if(t.length<10){setErr('rv-text','Write at least a sentence so other families can learn from it.');return}
+    var ak=myAk();
+    if(await wItem('reviews',{id:'rv-'+ak+'-'+S.current,kind:'review',pid:S.current,ak:ak,uid:S.uid||'',name:(S.user.name||'A student').split(' ')[0],cls:S.user.cls||'',stars:+$('#rv-stars').value,text:t,ts:Date.now(),status:'visible'},S.uid)){render();toast('Review posted')}
+  }else if(f.id==='qa-form'){
+    e.preventDefault();var q=$('#qa-text').value.trim();
+    if(q.length<5){setErr('qa-text','Type your question first.');return}
+    if(await wItem('questions',{id:rid('q'),pid:S.current,ak:myAk(),uid:S.uid||'',name:(S.user.name||'Customer').split(' ')[0],text:q,ts:Date.now(),answer:''},S.uid)){render();toast('Question sent')}
+  }else if(f.id==='co-form'){
+    e.preventDefault();
+    if(!S.waVerified){setErr('co-wa','Verify your WhatsApp number first.');return}
+    if(validCheckout())placeOrder();
+  }else if(f.id==='search-form'||f.id==='finder'){
+    e.preventDefault();if(f.id==='finder')setClass($('#h-class').value);toShop();
+  }
+});
+
+/* ================= click delegation ================= */
+document.addEventListener('click',function(e){
+  var m=$('#acct-menu');
+  if(!m.hidden&&!e.target.closest('.acct-wrap')){m.hidden=true;$('#acct-btn').setAttribute('aria-expanded','false')}
+  var d=e.target.closest('[data-d]');
+  if(d){var fn=DA[d.getAttribute('data-d')];if(fn){try{var r=fn(d);if(r&&r.catch)r.catch(function(){toast('Something went wrong. Try again.')})}catch(x){toast('Something went wrong. Try again.')}}return}
+  var el=e.target.closest('[data-act]');if(!el)return;
+  var a=el.getAttribute('data-act'),id=el.getAttribute('data-id');
+  switch(a){
+    case 'home':window.scrollTo({top:0});break;
+    case 'open':openProduct(id);break;
+    case 'heart':toggleWish(id);break;
+    case 'add':addToCart(id);break;
+    case 'login':openLogin(function(){if(!$('#lay-product').hidden)renderProduct()});break;
+    case 'login-add':openLogin(function(){addToCart(S.current)});break;
+    case 'account':var open=m.hidden;m.hidden=!open;el.setAttribute('aria-expanded',String(open));break;
+    case 'logout':S.user=null;saveShop();m.hidden=true;render();toast('You are logged out');break;
+    case 'cart-open':if(!$('#lay-product').hidden)closeLayer('lay-product');renderCart();openLayer('lay-cart');break;
+    case 'wish-open':if(!S.user){openLogin(function(){renderWish();openLayer('lay-wish')});break}renderWish();openLayer('lay-wish');break;
+    case 'orders-open':m.hidden=true;if(!S.user){openLogin(function(){renderOrders();openLayer('lay-orders')});break}renderOrders();openLayer('lay-orders');break;
+    case 'close':closeLayer(el.closest('.layer').id);break;
+    case 'qty':var l=S.cart.find(function(c){return c.id===id}),p=byId(id);if(l&&p){l.qty=Math.max(1,Math.min(10,Math.max(1,stockOf(p)),l.qty+(+el.getAttribute('data-d'))))}saveShop();render();break;
+    case 'remove':S.cart=S.cart.filter(function(c){return c.id!==id});saveShop();render();break;
+    case 'checkout':closeLayer('lay-cart');openCheckout();break;
+    case 'shop':closeAll();if(S.route!=='shop'){location.hash='shop'}else toShop();break;
+    case 'track':closeLayer('lay-checkout');renderOrders();openLayer('lay-orders');break;
+    case 'review-item':closeLayer('lay-orders');openProduct(id,true);break;
+    case 'helpful':(async function(){
+      var rv=el.getAttribute('data-rid'),ak=myAk(),vid='vt-'+ak+'-'+rv,cur=S.D.reviews[vid];
+      await wItem('reviews',{id:vid,kind:'vote',rid:rv,ak:ak,uid:S.uid||'',on:!(cur&&cur.on!==false)},S.uid);renderProduct();
+    })();break;
+    case 'report':(async function(){
+      var rv=el.getAttribute('data-rid'),ak=myAk();
+      if(await wItem('reviews',{id:'rp-'+ak+'-'+rv,kind:'report',rid:rv,ak:ak,uid:S.uid||'',ts:Date.now()},S.uid)){renderProduct();toast('Thanks. The team will take a look.')}
+    })();break;
+    case 'board':setBoard(el.getAttribute('data-v'));break;
+    case 'cat':S.f.cat=el.getAttribute('data-v');renderCats();renderGrid();break;
+    case 'subject':S.f.subject=el.getAttribute('data-v');renderSubjects();renderGrid();break;
+    case 'clear':clearFilters();break;
+    case 'filters-toggle':var fl=$('#filters'),o2=fl.classList.toggle('open');el.setAttribute('aria-expanded',String(o2));break;
+    case 'resend':startCountdown();toast('A new code was sent');break;
+    case 'change-email':showPane('lg-p1');break;
+    case 'skip-profile':finishLogin();break;
+    case 'wa-send':
+      var wa=$('#co-wa').value.trim();
+      if(!/^[6-9]\d{9}$/.test(wa)){setErr('co-wa','Enter a 10-digit mobile number starting with 6, 7, 8 or 9.');break}
+      setErr('co-wa','');$('#co-otp').hidden=false;$('#co-code').value='';$('#co-code').focus();el.textContent='Resend code';S.waCode=wa;markVerified(false);S.waVerified='';break;
+    case 'wa-verify':
+      var cd=$('#co-code').value.trim();
+      if(!/^\d{6}$/.test(cd)){setErr('co-code','Enter the 6-digit code.');break}
+      setErr('co-code','');S.waVerified=S.waCode;$('#co-otp').hidden=true;markVerified(true);break;
+  }
+});
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='co-wa'&&S.waVerified&&t.value.trim()!==S.waVerified){S.waVerified='';markVerified(false);$('#co-otp').hidden=true}
+  var q=t.getAttribute&&t.getAttribute('data-q');
+  if(q){var p=q.split('.');S.q[p[0]][p[1]]=t.value;renderDash()}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='rv-sort'){S.revSort=t.value;renderProduct();var s=$('#rv-sort');if(s)s.focus()}
+  var qs=t.getAttribute&&t.getAttribute('data-qs');
+  if(qs){var p=qs.split('.');S.q[p[0]][p[1]]=t.value;renderDash()}
+  if(t.getAttribute&&t.getAttribute('data-actas')){S.actAs=t.value;store.set('pb2.actAs',S.actAs);renderDash()}
+});
+$('#h-class').addEventListener('change',function(){S.f.cls=this.value;$('#s-class').value=this.value});
+$('#s-class').addEventListener('change',function(){setClass(this.value)});
+$('#q').addEventListener('input',function(){S.f.q=this.value.trim();renderGrid()});
+$('#sort').addEventListener('change',function(){S.f.sort=this.value;renderGrid()});
+$('#s-price').addEventListener('input',function(){var v=+this.value;S.f.max=v>=+this.max?null:v;$('#price-val').textContent=inr(v);renderGrid()});
+
+/* ================= init ================= */
+async function init(){
+  routeFrom();
+  classOptions($('#h-class'),['all','All classes']);classOptions($('#s-class'),['all','All classes']);classOptions($('#lg-class'),['','Select']);
+  $('#hero-board').innerHTML=artSvg(STARTER[0]);$('#hero-mini').innerHTML=artSvg(STARTER[1]);
+  renderCats();renderSubjects();render();
+  function get(n){
+    if(!window.claude||!window.claude.use)return Promise.resolve(null);
+    return Promise.race([window.claude.use(n).catch(function(){return null}),new Promise(function(r){setTimeout(function(){r(null)},12000)})]);
+  }
+  var res=await Promise.all([get('db'),get('user'),get('downloads')]);
+  S.db=res[0];S.dl=res[2];var u=res[1];
+  if(u){try{S.isOwner=await u.isOwner();S.canEdit=await u.canEdit();S.uid=await u.id()}catch(e){}}
+  if(S.db){S.mode='db';subscribeAll()}
+  else{S.mode='local';S.D=store.get('pb2.local',null)||seedLocal();var base=seedLocal();Object.keys(base).forEach(function(k){if(!S.D[k])S.D[k]=base[k]})}
+  render();
+}
+init();
+})();
+</script>
+
+</body></html>
